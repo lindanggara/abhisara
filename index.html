@@ -1356,10 +1356,7 @@ lapBtn.addEventListener('click', () => {
   renderLaps();
   setStatus(`Lap ${laps.length} selesai (${format(duration)})`, 'running');
 
-  setTimeout(() => {
-    const inputs = document.querySelectorAll('.lap-note-input');
-    if (inputs.length) inputs[inputs.length - 1].focus();
-  }, 150);
+  // AUTO-FOCUS DIHAPUS - TIDAK SCROLL KE BAWAH
 });
 
 // ===== RESET =====
@@ -1537,6 +1534,7 @@ hitungPenilaian();
 console.log('✅ Lap Timer ABHISARA siap digunakan!');
 console.log('📊 Penilaian ada di tab terpisah dengan ikon premium');
 console.log('📸 Tombol JPG untuk screenshot');
+console.log('✅ Auto-focus dihilangkan, klik LAP tidak scroll ke bawah');
 </script>
 </body>
 </html>
