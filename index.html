@@ -5,9 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#f2f4fb">
 <title>ABHISARA · Lap Timer Dashboard</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<!-- 100% offline: no external fonts/icons/libraries by default. Icons are inline SVG,
+     fonts use the system stack. The only optional exception is "Ekspor JPG", which
+     needs a one-time internet fetch the first time it's used (see screenshotBtn). -->
 <style>
-  /* ================= TOKENS ================= */
   :root{
     --bg:#eef1fb;
     --surface:#ffffff;
@@ -21,43 +22,20 @@
     --gold:#f5a524;
     --gold-soft:#fff3dd;
     --green:#12b76a;
-    --green-soft:#e6f9f0;
     --red:#ef4444;
     --red-soft:#feeceb;
     --radius-xl:28px;
     --radius-lg:20px;
     --radius-md:14px;
     --radius-sm:10px;
-    --font-display:-apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-    --font-body:-apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-    --font-mono:'SF Mono', 'Cascadia Code', 'Consolas', 'Roboto Mono', monospace;
+    --font-display:-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;
+    --font-body:-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;
+    --font-mono:'SF Mono','Cascadia Code','Consolas','Roboto Mono',monospace;
   }
-
   *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
-
-  .icon{
-    width:20px;
-    height:20px;
-    display:inline-block;
-    flex-shrink:0;
-    vertical-align:-4px;
-  }
-
-  .icon-sm{
-    width:16px;
-    height:16px;
-  }
-
-  .icon-md{
-    width:22px;
-    height:22px;
-  }
-
-  .icon svg{
-    width:100%;
-    height:100%;
-    display:block;
-  }
+  .icon-svg{width:16px;height:16px;display:inline-block;vertical-align:-3px;flex-shrink:0;}
+  .icon-svg.spin{animation:spin 0.8s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg);}}
 
   body{
     font-family:var(--font-body);
@@ -71,904 +49,444 @@
     display:flex;
     justify-content:center;
   }
+  .app{max-width:460px;width:100%;}
 
-  .app{
-    max-width:460px;
-    width:100%;
-  }
-
-  /* ================= SCREENSHOT AREA ================= */
-  #screenshot-area {
-    background: var(--bg);
-    padding: 20px 20px 30px;
-    border-radius: 28px;
-    width: 100%;
-    max-width: 460px;
-    margin: 0 auto;
-  }
-
-  /* ================= HEADER ================= */
-  .topbar{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    margin-bottom:18px;
-  }
-
-  .brand{
-    display:flex;
-    align-items:center;
-    gap:10px;
-  }
-
+  /* ===== HEADER ===== */
+  .topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;gap:10px;}
+  .brand{display:flex;align-items:center;gap:10px;}
   .brand-mark{
-    width:38px;height:38px;
-    border-radius:12px;
+    width:38px;height:38px;border-radius:12px;flex-shrink:0;
     background:linear-gradient(135deg,var(--primary-1),var(--primary-2));
     display:flex;align-items:center;justify-content:center;
     box-shadow:0 8px 18px var(--primary-glow);
-    color:#fff;
-    font-family:var(--font-display);
-    font-weight:800;
-    font-size:16px;
-    flex-shrink:0;
+    color:#fff;font-family:var(--font-display);font-weight:800;font-size:16px;
   }
-
-  .brand-text h1{
-    font-family:var(--font-display);
-    font-size:16px;
-    font-weight:700;
-    letter-spacing:-0.2px;
-  }
-
-  .brand-text .sub{
-    font-size:11px;
-    color:var(--ink-dim);
-    font-weight:500;
-    letter-spacing:0.4px;
-    text-transform:uppercase;
-  }
-
-  .topbar-right{
-    display:flex;
-    align-items:center;
-    gap:8px;
-    flex-shrink:0;
-  }
-
+  .brand-text h1{font-family:var(--font-display);font-size:16px;font-weight:700;letter-spacing:-0.2px;}
+  .brand-text .sub{font-size:11px;color:var(--ink-dim);font-weight:500;letter-spacing:0.4px;text-transform:uppercase;}
   .date-badge{
-    background:var(--surface);
-    border:1px solid var(--line);
-    padding:8px 14px;
-    border-radius:999px;
-    font-size:11px;
-    font-weight:700;
-    color:var(--ink-dim);
-    font-family:var(--font-mono);
-    white-space:nowrap;
+    background:var(--surface);border:1px solid var(--line);padding:8px 14px;border-radius:999px;
+    font-size:11px;font-weight:700;color:var(--ink-dim);font-family:var(--font-mono);white-space:nowrap;flex-shrink:0;
   }
 
-  /* ================= HERO / SESSION CARD ================= */
+  /* ===== HERO ===== */
   .hero{
     position:relative;
-    background:linear-gradient(150deg,var(--primary-1) 0%, var(--primary-2) 55%, #7c6cf5 100%);
-    border-radius:var(--radius-xl);
-    padding:22px 22px 20px;
-    color:#fff;
-    overflow:hidden;
-    box-shadow:0 20px 40px -12px var(--primary-glow);
-    margin-bottom:14px;
+    background:linear-gradient(150deg,var(--primary-1) 0%,var(--primary-2) 55%,#7c6cf5 100%);
+    border-radius:var(--radius-xl);padding:22px 22px 20px;color:#fff;overflow:hidden;
+    box-shadow:0 20px 40px -12px var(--primary-glow);margin-bottom:14px;
   }
-
-  .hero::before{
-    content:'';
-    position:absolute;
-    width:260px;height:260px;
-    top:-120px; right:-90px;
-    background:radial-gradient(circle, rgba(255,255,255,0.18), transparent 65%);
-  }
-
-  .hero-top{
-    display:flex;
-    justify-content:space-between;
-    align-items:flex-start;
-    position:relative;
-    z-index:1;
-    gap:10px;
-  }
-
-  .hero-label{
-    font-size:11px;
-    font-weight:700;
-    text-transform:uppercase;
-    letter-spacing:0.6px;
-    color:rgba(255,255,255,0.75);
-    margin-bottom:6px;
-  }
-
+  .hero::before{content:'';position:absolute;width:260px;height:260px;top:-120px;right:-90px;
+    background:radial-gradient(circle, rgba(255,255,255,0.18), transparent 65%);}
+  .hero-top{display:flex;justify-content:space-between;align-items:flex-start;position:relative;z-index:1;gap:10px;}
+  .hero-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:rgba(255,255,255,0.75);margin-bottom:6px;display:flex;align-items:center;gap:5px;}
   .session-input{
-    background:rgba(255,255,255,0.14);
-    border:1px solid rgba(255,255,255,0.22);
-    border-radius:var(--radius-sm);
-    padding:9px 12px;
-    font-size:13px;
-    font-weight:600;
-    color:#fff;
-    width:118px;
-    text-align:right;
-    font-family:var(--font-body);
-    flex-shrink:0;
+    background:rgba(255,255,255,0.14);border:1px solid rgba(255,255,255,0.22);border-radius:var(--radius-sm);
+    padding:9px 12px;font-size:13px;font-weight:600;color:#fff;width:118px;text-align:right;font-family:var(--font-body);flex-shrink:0;
   }
-
   .session-input::placeholder{color:rgba(255,255,255,0.55);}
   .session-input:focus{outline:none;border-color:rgba(255,255,255,0.5);}
-
-  .hero-timer{
-    text-align:center;
-    margin:18px 0 8px;
-    position:relative;
-    z-index:1;
-  }
-
-  .timer{
-    font-family:var(--font-mono);
-    font-size:clamp(48px, 14vw, 64px);
-    font-weight:700;
-    letter-spacing:-1px;
-    line-height:1;
-    font-variant-numeric:tabular-nums;
-  }
-
-  .timer .ms{
-    font-size:0.42em;
-    color:rgba(255,255,255,0.65);
-    letter-spacing:-0.5px;
-  }
-
-  .status-row{
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    gap:8px;
-    margin-top:6px;
-    font-size:12px;
-    font-weight:600;
-    color:rgba(255,255,255,0.82);
-    flex-wrap:wrap;
-  }
-
-  .dot{
-    width:7px;height:7px;border-radius:50%;
-    background:rgba(255,255,255,0.5);
-    transition:.3s;
-    flex-shrink:0;
-  }
+  .hero-timer{text-align:center;margin:18px 0 8px;position:relative;z-index:1;}
+  .timer{font-family:var(--font-mono);font-size:clamp(48px,14vw,64px);font-weight:700;letter-spacing:-1px;line-height:1;font-variant-numeric:tabular-nums;}
+  .timer .ms{font-size:0.42em;color:rgba(255,255,255,0.65);letter-spacing:-0.5px;}
+  .status-row{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:6px;font-size:12px;font-weight:600;color:rgba(255,255,255,0.82);flex-wrap:wrap;}
+  .dot{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,0.5);transition:.3s;flex-shrink:0;}
   .dot.running{background:#8bffb0;box-shadow:0 0 10px #8bffb0;}
   .dot.paused{background:var(--gold);box-shadow:0 0 10px var(--gold);}
   .dot.idle{background:rgba(255,255,255,0.4);}
-
-  .hero-actions{
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:10px;
-    margin-top:18px;
-    position:relative;
-    z-index:1;
-  }
-
+  .hero-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px;position:relative;z-index:1;}
   .hero-actions button{
-    min-height:52px;
-    border:0;
-    border-radius:var(--radius-md);
-    font-family:var(--font-body);
-    font-weight:700;
-    font-size:15px;
-    cursor:pointer;
-    transition:transform .15s ease, opacity .2s ease;
-    touch-action:manipulation;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    gap:8px;
+    min-height:52px;border:0;border-radius:var(--radius-md);font-family:var(--font-body);font-weight:700;font-size:15px;
+    cursor:pointer;transition:transform .15s ease,opacity .2s ease;touch-action:manipulation;
+    display:flex;align-items:center;justify-content:center;gap:8px;
   }
-
   .hero-actions button:active{transform:scale(0.96);}
   .hero-actions button:disabled{opacity:.35;pointer-events:none;}
+  #startBtn{background:#fff;color:var(--primary-1);}
+  #startBtn.running{background:#ffe4e1;color:#c0281a;}
+  #lapBtn{background:rgba(255,255,255,0.16);color:#fff;border:1px solid rgba(255,255,255,0.3);}
 
-  #startBtn{
-    background:#fff;
-    color:var(--primary-1);
-  }
-  #startBtn.running{
-    background:#ffe4e1;
-    color:#c0281a;
-  }
-
-  #lapBtn{
-    background:rgba(255,255,255,0.16);
-    color:#fff;
-    border:1px solid rgba(255,255,255,0.3);
-  }
-
-  /* ================= RESET ================= */
   #resetBtn{
-    width:100%;
-    margin-top:10px;
-    min-height:40px;
-    background:transparent;
-    border:1px dashed var(--line);
-    color:var(--ink-dim);
-    border-radius:var(--radius-sm);
-    font-family:var(--font-body);
-    font-weight:600;
-    font-size:12.5px;
-    cursor:pointer;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    gap:7px;
+    width:100%;margin-top:10px;min-height:40px;background:transparent;border:1px dashed var(--line);color:var(--ink-dim);
+    border-radius:var(--radius-sm);font-family:var(--font-body);font-weight:600;font-size:12.5px;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;gap:7px;
   }
   #resetBtn:active{background:var(--surface-soft);}
 
-  /* ================= STATS GRID ================= */
-  .stats{
-    display:grid;
-    grid-template-columns:repeat(4,1fr);
-    gap:8px;
-    margin:18px 0 16px;
-  }
-
-  .stat-card{
-    background:var(--surface);
-    border:1px solid var(--line);
-    border-radius:var(--radius-md);
-    padding:12px 6px;
-    text-align:center;
-  }
-
-  .stat-card .stat-label{
-    font-size:9px;
-    font-weight:700;
-    text-transform:uppercase;
-    letter-spacing:0.5px;
-    color:var(--ink-dim);
-  }
-
-  .stat-card .stat-value{
-    font-family:var(--font-mono);
-    font-size:15px;
-    font-weight:700;
-    color:var(--ink);
-    margin-top:4px;
-  }
-
+  /* ===== STATS ===== */
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:18px 0 16px;}
+  .stat-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-md);padding:12px 6px;text-align:center;}
+  .stat-card .stat-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--ink-dim);}
+  .stat-card .stat-value{font-family:var(--font-mono);font-size:15px;font-weight:700;color:var(--ink);margin-top:4px;}
   .stat-card .stat-value.highlight{color:var(--gold);}
 
-  /* ================= TABS ================= */
-  .tabs{
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:8px;
-    margin-bottom:16px;
-  }
-
+  /* ===== TABS ===== */
+  .tabs{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:16px;}
   .tab-btn{
-    padding:12px 0;
-    border:2px solid var(--line);
-    border-radius:var(--radius-md);
-    background:var(--surface);
-    font-family:var(--font-body);
-    font-weight:700;
-    font-size:14px;
-    color:var(--ink-dim);
-    cursor:pointer;
-    transition:all 0.2s;
-    text-align:center;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    gap:8px;
+    padding:11px 0;border:2px solid var(--line);border-radius:var(--radius-md);background:var(--surface);
+    font-family:var(--font-body);font-weight:700;font-size:12.5px;color:var(--ink-dim);cursor:pointer;
+    transition:all .2s;display:flex;align-items:center;justify-content:center;gap:6px;
   }
-
-  .tab-btn .icon{
-    width:18px;
-    height:18px;
-  }
-
-  .tab-btn.active{
-    border-color:var(--primary-1);
-    background:var(--primary-1);
-    color:#fff;
-    box-shadow:0 4px 12px var(--primary-glow);
-  }
-
+  .tab-btn.active{border-color:var(--primary-1);background:var(--primary-1);color:#fff;box-shadow:0 4px 12px var(--primary-glow);}
   .tab-btn:active{transform:scale(0.97);}
+  .tab-content{display:none;}
+  .tab-content.active{display:block;}
 
-  .tab-content{
-    display:none;
+  /* ===== SECTION ===== */
+  .section-title{display:flex;justify-content:space-between;align-items:center;font-family:var(--font-display);font-size:14px;font-weight:700;margin-bottom:10px;gap:8px;}
+  .section-title .title-left{display:flex;align-items:center;gap:6px;color:var(--ink-dim);}
+  .section-title .title-left .icon-svg{color:var(--primary-1);}
+  .section-title .count{font-size:11px;color:var(--ink-dim);font-weight:500;font-family:var(--font-body);flex-shrink:0;}
+  .section-title .count.filled{color:var(--primary-1);font-weight:700;}
+
+  /* ===== CARDS (settings / notes / chart / penilaian) ===== */
+  .settings-card,.notes-card,.chart-card,.penilaian-card,.formula-card{
+    background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-lg);padding:16px;margin-bottom:18px;
   }
-
-  .tab-content.active{
-    display:block;
+  .settings-grid,.penilaian-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .setting-field label,.penilaian-field label{
+    display:block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--ink-dim);margin-bottom:5px;
+    display:flex;align-items:center;gap:4px;
   }
-
-  /* ================= PENILAIAN CARD ================= */
-  .penilaian-card{
-    background:var(--surface);
-    border:1px solid var(--line);
-    border-radius:var(--radius-lg);
-    padding:16px;
-    margin-bottom:18px;
+  .setting-field input,.penilaian-field input{
+    width:100%;background:var(--surface-soft);border:1px solid var(--line);border-radius:var(--radius-sm);
+    padding:10px 12px;font-size:13.5px;font-weight:700;font-family:var(--font-mono);color:var(--ink);
   }
+  .setting-field input:focus,.penilaian-field input:focus{outline:none;border-color:var(--primary-2);background:#fff;}
 
-  .penilaian-grid{
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:10px;
-    margin-bottom:12px;
+  #settingNotes{
+    width:100%;background:var(--surface-soft);border:1px solid var(--line);border-radius:var(--radius-sm);
+    padding:10px 12px;font-size:12.5px;font-family:var(--font-body);color:var(--ink);resize:vertical;min-height:44px;
   }
+  #settingNotes:focus{outline:none;border-color:var(--primary-2);background:#fff;}
+  #settingNotes::placeholder{color:#b7bce0;}
 
-  .penilaian-field label{
-    display:block;
-    font-size:9px;
-    font-weight:700;
-    text-transform:uppercase;
-    letter-spacing:0.5px;
-    color:var(--ink-dim);
-    margin-bottom:4px;
-  }
+  #lapChart{width:100%;height:130px;display:block;overflow:visible;}
 
-  .penilaian-field input{
-    width:100%;
-    background:var(--surface-soft);
-    border:1px solid var(--line);
-    border-radius:var(--radius-sm);
-    padding:8px 10px;
-    font-size:13px;
-    font-weight:600;
-    font-family:var(--font-mono);
-    color:var(--ink);
-  }
-
-  .penilaian-field input:focus{
-    outline:none;
-    border-color:var(--primary-2);
-    background:#fff;
-  }
-
-  .penilaian-hasil{
-    display:grid;
-    grid-template-columns:repeat(3,1fr);
-    gap:8px;
-    padding-top:12px;
-    border-top:1px solid var(--line);
-  }
-
-  .nilai-item{
-    text-align:center;
-    background:var(--surface-soft);
-    border-radius:var(--radius-sm);
-    padding:12px 6px;
-  }
-
-  .nilai-item .nilai-label{
-    font-size:9px;
-    font-weight:700;
-    text-transform:uppercase;
-    letter-spacing:0.5px;
-    color:var(--ink-dim);
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    gap:5px;
-  }
-
-  .nilai-item .nilai-label .icon{
-    width:14px;
-    height:14px;
-  }
-
-  .nilai-item .nilai-value{
-    font-family:var(--font-mono);
-    font-size:20px;
-    font-weight:700;
-    margin-top:3px;
-  }
-
+  .penilaian-hasil{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding-top:12px;margin-top:12px;border-top:1px solid var(--line);}
+  .nilai-item{text-align:center;background:var(--surface-soft);border-radius:var(--radius-sm);padding:12px 6px;}
+  .nilai-item .nilai-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--ink-dim);display:flex;align-items:center;justify-content:center;gap:3px;}
+  .nilai-item .nilai-value{font-family:var(--font-mono);font-size:19px;font-weight:700;margin-top:4px;color:var(--ink);}
   .nilai-item .nilai-value.high{color:var(--green);}
   .nilai-item .nilai-value.medium{color:var(--gold);}
   .nilai-item .nilai-value.low{color:var(--red);}
-
-  .nilai-item.primary{
-    background:var(--primary-1);
-    color:#fff;
-  }
+  .nilai-item.primary{background:var(--primary-1);}
   .nilai-item.primary .nilai-label{color:rgba(255,255,255,0.7);}
   .nilai-item.primary .nilai-value{color:#fff;}
 
-  /* ================= SECTION ================= */
-  .section-title{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    font-family:var(--font-display);
-    font-size:14px;
-    font-weight:700;
-    margin-bottom:10px;
-  }
+  .formula-card{font-size:12px;color:var(--ink-dim);}
+  .formula-card .formula-title{font-weight:700;color:var(--ink);margin-bottom:8px;display:flex;align-items:center;gap:6px;}
+  .formula-card .formula-list{display:grid;gap:5px;}
+  .formula-card .formula-note{margin-top:6px;font-size:11px;color:var(--ink-dim);}
 
-  .section-title .count{
-    font-size:11px;
-    color:var(--ink-dim);
-    font-weight:500;
-    font-family:var(--font-body);
-  }
-
-  .section-title .count.filled{
-    color:var(--primary-1);
-    font-weight:700;
-  }
-
-  /* ================= SETTINGS CARD ================= */
-  .settings-card{
-    background:var(--surface);
-    border:1px solid var(--line);
-    border-radius:var(--radius-lg);
-    padding:16px;
-    margin-bottom:18px;
-  }
-
-  .settings-grid{
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:10px;
-  }
-
-  .setting-field label{
-    display:block;
-    font-size:10px;
-    font-weight:700;
-    text-transform:uppercase;
-    letter-spacing:0.5px;
-    color:var(--ink-dim);
-    margin-bottom:5px;
-  }
-
-  .setting-field input{
-    width:100%;
-    background:var(--surface-soft);
-    border:1px solid var(--line);
-    border-radius:var(--radius-sm);
-    padding:10px 12px;
-    font-size:14px;
-    font-weight:700;
-    font-family:var(--font-mono);
-    color:var(--ink);
-  }
-
-  .setting-field input:focus{
-    outline:none;
-    border-color:var(--primary-2);
-    background:#fff;
-  }
-
-  /* ================= CHART CARD ================= */
-  .chart-card{
-    background:var(--surface);
-    border:1px solid var(--line);
-    border-radius:var(--radius-lg);
-    padding:14px 14px 8px;
-    margin-bottom:18px;
-  }
-
-  #lapChart{
-    width:100%;
-    height:130px;
-    display:block;
-    overflow:visible;
-  }
-
-  .laps-wrapper{
-    background:var(--surface);
-    border:1px solid var(--line);
-    border-radius:var(--radius-lg);
-    overflow:hidden;
-  }
-
+  /* ===== LAPS LIST ===== */
+  .laps-wrapper{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-lg);overflow:hidden;}
   .laps-header{
-    display:grid;
-    grid-template-columns:32px 1fr 1fr 1.2fr;
-    gap:6px;
-    padding:11px 14px;
-    background:var(--surface-soft);
-    color:var(--ink-dim);
-    font-size:9px;
-    font-weight:700;
-    text-transform:uppercase;
-    letter-spacing:0.5px;
-    border-bottom:1px solid var(--line);
+    display:grid;grid-template-columns:32px 1fr 1fr 1.2fr;gap:6px;padding:11px 14px;background:var(--surface-soft);
+    color:var(--ink-dim);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;border-bottom:1px solid var(--line);
   }
-
-  #lapList{
-    max-height:280px;
-    overflow-y:auto;
-  }
+  #lapList{max-height:280px;overflow-y:auto;}
   #lapList::-webkit-scrollbar{width:3px;}
   #lapList::-webkit-scrollbar-thumb{background:var(--line);border-radius:10px;}
-
   .lap-row{
-    display:grid;
-    grid-template-columns:32px 1fr 1fr 1.2fr;
-    gap:6px;
-    padding:11px 14px;
-    align-items:start;
-    border-bottom:1px solid var(--surface-soft);
-    font-size:13px;
+    display:grid;grid-template-columns:32px 1fr 1fr 1.2fr;gap:6px;padding:11px 14px;align-items:start;
+    border-bottom:1px solid var(--surface-soft);font-size:13px;
   }
   .lap-row:last-child{border-bottom:0;}
-
-  .lap-row .lap-number{color:var(--ink-dim);font-weight:700;font-size:12px;padding-top:4px;}
+  .lap-row .lap-number{color:var(--ink-dim);font-weight:700;font-size:12px;padding-top:4px;display:flex;align-items:center;gap:2px;}
   .lap-row .lap-time{font-family:var(--font-mono);font-weight:700;color:var(--ink);padding-top:4px;}
   .lap-row .lap-total{color:var(--ink-dim);font-size:11.5px;font-family:var(--font-mono);padding-top:4px;}
-
-  .lap-row .lap-note-wrap{
-    position:relative;
-  }
-
   .lap-row .lap-note-input{
-    width:100%;
-    background:var(--surface-soft);
-    border:1px solid var(--line);
-    border-radius:8px;
-    padding:6px 10px;
-    font-size:11px;
-    color:var(--ink);
-    font-family:var(--font-body);
-    resize:none;
-    overflow:hidden;
-    line-height:1.5;
-    display:block;
-    min-height:32px;
-    transition:border-color 0.2s;
+    width:100%;background:var(--surface-soft);border:1px solid var(--line);border-radius:8px;padding:6px 10px;
+    font-size:11px;color:var(--ink);font-family:var(--font-body);resize:none;overflow:hidden;line-height:1.4;min-height:32px;display:block;
   }
-
   .lap-row .lap-note-input::placeholder{color:#b7bce0;}
-  .lap-row .lap-note-input:focus{
-    outline:none;
-    border-color:var(--primary-2);
-    background:#fff;
-  }
-
-  .lap-row.best{
-    background:var(--gold-soft);
-    border-left:3px solid var(--gold);
-  }
+  .lap-row .lap-note-input:focus{outline:none;border-color:var(--primary-2);background:#fff;}
+  .lap-row.best{background:var(--gold-soft);border-left:3px solid var(--gold);}
   .lap-row.best .lap-time{color:#b6790f;}
-  .lap-row.best .lap-number{display:flex;align-items:center;gap:2px;padding-top:4px;}
-  .lap-row.best .best-star{width:9px;height:9px;flex-shrink:0;color:var(--gold);}
+  .best-star{width:9px;height:9px;color:var(--gold);flex-shrink:0;}
 
-  .empty{
-    padding:32px 16px;
-    text-align:center;
-    color:#b7bce0;
-    font-size:13px;
-  }
-  .empty .icon{font-size:26px;display:block;margin-bottom:8px;opacity:.6;}
+  .empty{padding:32px 16px;text-align:center;color:#b7bce0;font-size:13px;}
+  .empty .icon-svg{width:26px;height:26px;display:block;margin:0 auto 8px;opacity:.6;}
+  .note-hint{font-size:9.5px;color:#a2a7cc;text-align:center;margin-top:8px;letter-spacing:0.3px;display:flex;align-items:center;justify-content:center;gap:4px;}
 
-  .note-hint{
-    font-size:9.5px;
-    color:#a2a7cc;
-    text-align:center;
-    margin-top:8px;
-    letter-spacing:0.3px;
+  /* ===== HISTORY ===== */
+  .history-item{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-md);padding:14px 16px;margin-bottom:10px;}
+  .history-header{display:flex;justify-content:space-between;align-items:center;cursor:pointer;gap:8px;}
+  .history-title{font-weight:700;font-size:14px;display:flex;align-items:center;gap:6px;}
+  .history-title .icon-svg{color:var(--primary-1);}
+  .history-date{font-size:11px;color:var(--ink-dim);margin-top:2px;display:flex;align-items:center;gap:4px;flex-wrap:wrap;}
+  .history-right{text-align:right;flex-shrink:0;}
+  .history-total{font-weight:700;font-size:15px;color:var(--primary-1);font-family:var(--font-mono);}
+  .history-best{font-size:11px;color:var(--ink-dim);display:flex;align-items:center;justify-content:flex-end;gap:4px;}
+  .history-best .icon-svg{color:var(--gold);}
+  .history-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:10px;padding-top:10px;border-top:1px solid var(--line);font-size:11px;color:var(--ink-dim);}
+  .history-summary span{font-weight:600;color:var(--ink);}
+  .history-summary .best{color:var(--gold);}
+  .history-actions-row{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;}
+  .mini-btn{
+    background:var(--surface-soft);border:1px solid var(--line);border-radius:8px;padding:6px 11px;font-size:11px;font-weight:600;
+    color:var(--ink-dim);cursor:pointer;display:inline-flex;align-items:center;gap:5px;font-family:var(--font-body);
   }
+  .mini-btn.primary{background:var(--primary-1);border-color:var(--primary-1);color:#fff;}
+  .mini-btn.gold{background:var(--gold);border-color:var(--gold);color:#fff;}
+  .mini-btn.danger-icon{background:transparent;border:0;color:var(--red);margin-left:auto;padding:6px 8px;}
 
-  /* ================= EXPORT ROW ================= */
-  .export-row{
-    display:grid;
-    grid-template-columns:1fr 1fr 1fr;
-    gap:8px;
-    margin-top:14px;
+  .history-detail{margin-top:10px;padding-top:10px;border-top:1px solid var(--line);}
+  .history-detail-header{
+    display:grid;grid-template-columns:28px 1fr 1fr 1fr;gap:6px;padding:6px 10px;font-size:9px;font-weight:700;color:var(--ink-dim);
+    text-transform:uppercase;letter-spacing:0.5px;background:var(--surface-soft);border-radius:6px;
   }
+  .history-detail-row{
+    display:grid;grid-template-columns:28px 1fr 1fr 1fr;gap:6px;padding:6px 10px;font-size:12px;border-bottom:1px solid var(--surface-soft);
+  }
+  .history-detail-row .note-cell{color:var(--ink-dim);font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .history-legend{margin-top:6px;font-size:11px;color:var(--ink-dim);text-align:right;padding:4px 10px;background:var(--surface-soft);border-radius:6px;display:flex;align-items:center;justify-content:flex-end;gap:4px;}
+  .history-legend .icon-svg{color:var(--gold);}
 
-  .export-row button{
-    min-height:46px;
-    background:var(--surface);
-    border:1px solid var(--line);
-    border-radius:var(--radius-md);
-    font-size:11px;
-    font-weight:700;
-    color:var(--ink-dim);
-    cursor:pointer;
-    transition:.2s;
-    font-family:var(--font-body);
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    gap:5px;
-    flex-direction:column;
-    line-height:1.2;
-    padding:6px 4px;
-  }
+  .history-actions{display:flex;gap:10px;margin-top:4px;flex-wrap:wrap;}
+  .history-actions button{flex:1;min-width:130px;}
 
-  .export-row button .icon{
-    width:18px;
-    height:18px;
+  /* ===== BUTTONS (shared) ===== */
+  .btn-primary,.btn-gold,.btn-danger,.btn-outline{
+    border:0;border-radius:var(--radius-md);font-weight:700;cursor:pointer;transition:.2s;min-height:44px;padding:0 14px;
+    display:inline-flex;align-items:center;justify-content:center;gap:7px;font-size:12.5px;font-family:var(--font-body);
   }
+  .btn-primary{background:linear-gradient(135deg,var(--primary-1),var(--primary-2));color:#fff;}
+  .btn-gold{background:linear-gradient(135deg,var(--gold),#d48a1a);color:#fff;}
+  .btn-danger{background:linear-gradient(135deg,var(--red),#dc2626);color:#fff;}
+  .btn-outline{background:var(--surface);border:1px solid var(--line);color:var(--ink-dim);}
+  .btn-primary:active,.btn-gold:active,.btn-danger:active,.btn-outline:active{opacity:0.85;transform:scale(0.97);}
+  .btn-primary:disabled,.btn-gold:disabled,.btn-danger:disabled,.btn-outline:disabled{opacity:0.35;cursor:not-allowed;}
 
-  .export-row button .sub-label{
-    font-size:8px;
-    font-weight:400;
-    opacity:0.6;
-  }
-  .export-row button:not(:disabled):active{background:var(--surface-soft);transform:scale(.97);}
-  .export-row button:disabled{opacity:.3;}
-  .export-row button.primary{
-    background:linear-gradient(135deg,var(--primary-1),var(--primary-2));
-    color:#fff;
-    border:0;
-  }
-  .export-row button.primary:not(:disabled):active{opacity:0.8;}
-  .export-row button.gold{
-    background:linear-gradient(135deg,var(--gold),#d48a1a);
-    color:#fff;
-    border:0;
-  }
-  .export-row button.gold:not(:disabled):active{opacity:0.8;}
+  .export-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:16px;}
+  .export-row button span.hint{font-size:8.5px;opacity:0.75;font-weight:500;}
 
-  /* ================= RESPONSIVE ================= */
+  /* ===== SCREENSHOT AREA ===== */
+  #screenshot-area{
+    background:var(--bg);
+    padding:22px 20px 30px;
+    border-radius:var(--radius-xl);
+    width:100%;
+  }
   @media (max-width:400px){
     .timer{font-size:clamp(40px,13vw,54px);}
     .stats{gap:5px;}
-    .lap-row{font-size:12px;padding:9px 10px;grid-template-columns:28px 1fr 1fr 1.2fr;}
-    .laps-header{font-size:8px;padding:9px 10px;grid-template-columns:28px 1fr 1fr 1.2fr;}
-    .lap-row .lap-note-input{font-size:10px;padding:4px 8px;min-height:28px;}
+    .lap-row{font-size:12px;padding:9px 10px;}
+    .laps-header{font-size:8px;padding:9px 10px;}
+    .tab-btn{font-size:10.5px;padding:9px 0;}
+    .penilaian-grid{grid-template-columns:1fr;}
+    .penilaian-hasil{grid-template-columns:1fr 1fr;}
     .export-row{grid-template-columns:1fr 1fr;}
     .export-row button:last-child{grid-column:span 2;}
-    #screenshot-area{padding:12px 12px 20px;}
-    .penilaian-hasil{grid-template-columns:1fr 1fr;}
-    .penilaian-grid{grid-template-columns:1fr;}
-    .tab-btn{font-size:12px;padding:10px 0;}
-    .tab-btn .icon{width:16px;height:16px;}
+    .history-summary{grid-template-columns:1fr 1fr;}
+    .history-summary div:last-child{grid-column:span 2;}
+    .history-actions{flex-direction:column;}
+    .history-actions button{min-width:0;}
   }
-
-  @media (min-width:500px){
-    #screenshot-area{padding:30px 30px 40px;}
-  }
-
-  /* ================= SCREENSHOT OPTIMIZATION ================= */
-  .screenshot-optimize {
-    font-smooth: antialiased;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-  }
-
-  .hero-actions button{display:flex !important;}
-  #lapChart{background:transparent;}
 </style>
 </head>
 <body>
 
-<div class="app" id="app">
+<div class="app">
+<div id="screenshot-area">
 
-  <!-- SCREENSHOT AREA -->
-  <div id="screenshot-area" class="screenshot-optimize">
-
-    <!-- TOPBAR -->
-    <div class="topbar">
-      <div class="brand">
-        <div class="brand-mark">A</div>
-        <div class="brand-text">
-          <h1>Lap Timer</h1>
-          <div class="sub">Abhisara · Precision Timing</div>
-        </div>
-      </div>
-      <div class="topbar-right">
-        <span class="date-badge" id="dateDisplay">--/--/----</span>
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="brand">
+      <div class="brand-mark">A</div>
+      <div class="brand-text">
+        <h1>Lap Timer</h1>
+        <div class="sub">Abhisara · Precision Timing</div>
       </div>
     </div>
-
-    <!-- HERO -->
-    <div class="hero">
-      <div class="hero-top">
-        <div>
-          <div class="hero-label">Sesi Aktif</div>
-          <div style="font-family:var(--font-display);font-weight:700;font-size:20px;">
-            <span id="lapCount">0</span> Lap
-          </div>
-        </div>
-        <input class="session-input" type="text" id="sessionInput" placeholder="Nama sesi" value="Uji-01">
-      </div>
-
-      <div class="hero-timer">
-        <div id="timer" class="timer">00:00<span class="ms">.00</span></div>
-        <div class="status-row">
-          <span class="dot idle" id="statusDot"></span>
-          <span id="statusText">Siap</span>
-          <span id="avgDisplay" style="margin-left:6px;opacity:.85;">· Rata-rata —</span>
-        </div>
-      </div>
-
-      <div class="hero-actions">
-        <button id="startBtn">
-          <span class="icon"><svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg></span>
-          <span class="btn-label">START</span>
-        </button>
-        <button id="lapBtn" disabled>
-          <span class="icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M5 2v20h2v-8h4.5l1 2H19l-3-4.5L19 7h-6.5l-1-2H7V2H5z"/></svg></span>
-          <span class="btn-label">LAP</span>
-        </button>
-      </div>
-    </div>
-
-    <button id="resetBtn">
-      <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg></span>
-      Reset sesi
-    </button>
-
-    <!-- STATS -->
-    <div class="stats">
-      <div class="stat-card">
-        <div class="stat-label">Lap</div>
-        <div class="stat-value" id="lapCount2">0</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Rata-rata</div>
-        <div class="stat-value" id="avg">—</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Tercepat</div>
-        <div class="stat-value highlight" id="best">—</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Total</div>
-        <div class="stat-value" id="totalTime">—</div>
-      </div>
-    </div>
-
-    <!-- TABS -->
-    <div class="tabs">
-      <button class="tab-btn active" data-tab="tabTimer">
-        <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span>
-        Timer
-      </button>
-      <button class="tab-btn" data-tab="tabPenilaian">
-        <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4"/><path d="M12 18v4"/><path d="M4.93 4.93l2.83 2.83"/><path d="M16.24 16.24l2.83 2.83"/><path d="M2 12h4"/><path d="M18 12h4"/><path d="M4.93 19.07l2.83-2.83"/><path d="M16.24 7.76l2.83-2.83"/></svg></span>
-        Penilaian
-      </button>
-    </div>
-
-    <!-- TAB 1: TIMER -->
-    <div id="tabTimer" class="tab-content active">
-
-      <!-- SETTINGS KARBURATOR -->
-      <div class="section-title">
-        Setelan Karburator
-        <span class="count" id="settingSummary">Belum diisi</span>
-      </div>
-
-      <div class="settings-card">
-        <div class="settings-grid">
-          <div class="setting-field">
-            <label for="lowInput">Low</label>
-            <input type="text" id="lowInput" placeholder="cth: 1 1/2">
-          </div>
-          <div class="setting-field">
-            <label for="highInput">High</label>
-            <input type="text" id="highInput" placeholder="cth: 1 3/4">
-          </div>
-        </div>
-      </div>
-
-      <!-- CHART -->
-      <div class="section-title">
-        Grafik Waktu Lap
-        <span class="count" id="chartHint">Belum ada data</span>
-      </div>
-
-      <div class="chart-card">
-        <svg id="lapChart" viewBox="0 0 400 160" preserveAspectRatio="none"></svg>
-      </div>
-
-      <!-- LAPS LIST -->
-      <div class="section-title">
-        Data Lap
-        <span class="count" id="lapCountLabel">0 lap</span>
-      </div>
-
-      <div class="laps-wrapper">
-        <div class="laps-header">
-          <span>#</span><span>Waktu</span><span>Total</span><span>Catatan</span>
-        </div>
-        <div id="lapList">
-          <div class="empty"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg></span>Belum ada data lap</div>
-        </div>
-      </div>
-      <div class="note-hint">Klik kolom catatan untuk menambahkan keterangan (bisa multi-baris)</div>
-    </div>
-
-    <!-- TAB 2: PENILAIAN -->
-    <div id="tabPenilaian" class="tab-content">
-      <div class="section-title">
-        <span><span class="icon" style="vertical-align:-3px;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4"/><path d="M12 18v4"/><path d="M4.93 4.93l2.83 2.83"/><path d="M16.24 16.24l2.83 2.83"/><path d="M2 12h4"/><path d="M18 12h4"/><path d="M4.93 19.07l2.83-2.83"/><path d="M16.24 7.76l2.83-2.83"/></svg></span> Penilaian</span>
-        <span class="count">Otomatis</span>
-      </div>
-
-      <div class="penilaian-card">
-        <div class="penilaian-grid">
-          <div class="penilaian-field">
-            <label><span class="icon" style="width:14px;height:14px;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span> T_tercepat (waktu tercepat seluruh peserta)</label>
-            <input type="text" id="tTercepat" placeholder="cth: 00:01.58 atau 1.58" value="00:01.58">
-          </div>
-          <div class="penilaian-field">
-            <label><span class="icon" style="width:14px;height:14px;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></span> KL_terbanyak (jumlah rintangan terbanyak)</label>
-            <input type="number" id="klTerbanyak" placeholder="cth: 10" value="10" min="1">
-          </div>
-        </div>
-
-        <div class="penilaian-hasil">
-          <div class="nilai-item">
-            <div class="nilai-label">
-              <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></span>
-              NT
-            </div>
-            <div class="nilai-value" id="ntValue">—</div>
-          </div>
-          <div class="nilai-item">
-            <div class="nilai-label">
-              <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></span>
-              NKL
-            </div>
-            <div class="nilai-value" id="nklValue">—</div>
-          </div>
-          <div class="nilai-item primary">
-            <div class="nilai-label">
-              <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></span>
-              NA
-            </div>
-            <div class="nilai-value" id="naValue">—</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Rumus -->
-      <div style="background:var(--surface);border-radius:var(--radius-lg);padding:14px 16px;border:1px solid var(--line);font-size:12px;color:var(--ink-dim);">
-        <div style="font-weight:700;color:var(--ink);margin-bottom:6px;">📐 Rumus:</div>
-        <div style="display:grid;gap:4px;">
-          <div><b>NT</b> = (T_tercepat / T_aktual) × 100</div>
-          <div><b>NKL</b> = (KL_aktual / KL_terbanyak) × 100</div>
-          <div><b>NA</b> = 0.5 × NT + 0.5 × NKL</div>
-          <div style="margin-top:4px;font-size:11px;color:var(--ink-dim);">
-            T_aktual = waktu terbaik tim · KL_aktual = total lap
-          </div>
-        </div>
-      </div>
-    </div>
-
+    <span class="date-badge" id="dateDisplay">--/--/----</span>
   </div>
 
-  <!-- EXPORT -->
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-top">
+      <div>
+        <div class="hero-label" id="heroFlagLabel">Sesi Aktif</div>
+        <div style="font-family:var(--font-display);font-weight:700;font-size:20px;"><span id="lapCount">0</span> Lap</div>
+      </div>
+      <input class="session-input" type="text" id="sessionInput" placeholder="Nama sesi" value="Uji-01">
+    </div>
+    <div class="hero-timer">
+      <div id="timer" class="timer">00:00<span class="ms">.00</span></div>
+      <div class="status-row">
+        <span class="dot idle" id="statusDot"></span>
+        <span id="statusText">Siap</span>
+        <span id="avgDisplay" style="opacity:.85;">· Rata-rata —</span>
+      </div>
+    </div>
+    <div class="hero-actions">
+      <button id="startBtn"></button>
+      <button id="lapBtn" disabled></button>
+    </div>
+  </div>
+
+  <button id="resetBtn"></button>
+
+  <!-- STATS -->
+  <div class="stats">
+    <div class="stat-card"><div class="stat-label">Lap</div><div class="stat-value" id="lapCount2">0</div></div>
+    <div class="stat-card"><div class="stat-label">Rata-rata</div><div class="stat-value" id="avg">—</div></div>
+    <div class="stat-card"><div class="stat-label">Tercepat</div><div class="stat-value highlight" id="best">—</div></div>
+    <div class="stat-card"><div class="stat-label">Total</div><div class="stat-value" id="totalTime">—</div></div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="tabTimer" id="tabBtnTimer"></button>
+    <button class="tab-btn" data-tab="tabPenilaian" id="tabBtnPenilaian"></button>
+    <button class="tab-btn" data-tab="tabHistory" id="tabBtnHistory"></button>
+  </div>
+
+  <!-- TAB: TIMER -->
+  <div id="tabTimer" class="tab-content active">
+
+    <div class="section-title">
+      <span class="title-left" id="titleSetelan">Setelan Karburator</span>
+      <span class="count" id="settingSummary">Belum diisi</span>
+    </div>
+    <div class="settings-card">
+      <div class="settings-grid">
+        <div class="setting-field"><label for="lowInput">Low</label><input type="text" id="lowInput" placeholder="cth: 1 1/2"></div>
+        <div class="setting-field"><label for="highInput">High</label><input type="text" id="highInput" placeholder="cth: 1 3/4"></div>
+      </div>
+    </div>
+
+    <div class="section-title">
+      <span class="title-left" id="titleCatatan">Catatan Hasil Trial</span>
+      <span class="count">Opsional</span>
+    </div>
+    <div class="notes-card">
+      <textarea id="settingNotes" rows="3" placeholder="Catat hasil setelah trial, misal: Start bisa langsung RPM tinggi. Kendala: berat saat turning, tapi lancar kalau lurus."></textarea>
+    </div>
+
+    <div class="section-title">
+      <span class="title-left" id="titleGrafik">Grafik Waktu Lap</span>
+      <span class="count" id="chartHint">Belum ada data</span>
+    </div>
+    <div class="chart-card"><svg id="lapChart" viewBox="0 0 400 160" preserveAspectRatio="none"></svg></div>
+
+    <div class="section-title">
+      <span class="title-left" id="titleDataLap">Data Lap</span>
+      <span class="count" id="lapCountLabel">0 lap</span>
+    </div>
+    <div class="laps-wrapper">
+      <div class="laps-header"><span>#</span><span>Waktu</span><span>Total</span><span>Catatan</span></div>
+      <div id="lapList"></div>
+    </div>
+    <div class="note-hint" id="noteHint"></div>
+  </div>
+
+  <!-- TAB: PENILAIAN -->
+  <div id="tabPenilaian" class="tab-content">
+    <div class="section-title">
+      <span class="title-left" id="titlePenilaian">Penilaian</span>
+      <span class="count">Otomatis</span>
+    </div>
+
+    <div class="penilaian-card">
+      <div class="penilaian-grid">
+        <div class="penilaian-field">
+          <label id="labelTTercepat">T_tercepat (waktu tercepat seluruh peserta)</label>
+          <input type="text" id="tTercepat" placeholder="cth: 00:01.58 atau 1.58" value="00:01.58">
+        </div>
+        <div class="penilaian-field">
+          <label id="labelKlTerbanyak">KL_terbanyak (jumlah rintangan terbanyak)</label>
+          <input type="number" id="klTerbanyak" placeholder="cth: 10" value="10" min="1">
+        </div>
+      </div>
+      <div class="penilaian-hasil">
+        <div class="nilai-item"><div class="nilai-label" id="labelNT">NT</div><div class="nilai-value" id="ntValue">—</div></div>
+        <div class="nilai-item"><div class="nilai-label" id="labelNKL">NKL</div><div class="nilai-value" id="nklValue">—</div></div>
+        <div class="nilai-item primary"><div class="nilai-label" id="labelNA">NA</div><div class="nilai-value" id="naValue">—</div></div>
+      </div>
+    </div>
+
+    <div class="formula-card">
+      <div class="formula-title" id="titleRumus">Rumus:</div>
+      <div class="formula-list">
+        <div><b>NT</b> = (T_tercepat / T_aktual) &times; 100</div>
+        <div><b>NKL</b> = (KL_aktual / KL_terbanyak) &times; 100</div>
+        <div><b>NA</b> = 0.5 &times; NT + 0.5 &times; NKL</div>
+      </div>
+      <div class="formula-note">T_aktual = waktu terbaik tim &middot; KL_aktual = total lap</div>
+    </div>
+  </div>
+
+  <!-- TAB: HISTORY -->
+  <div id="tabHistory" class="tab-content">
+    <div class="section-title">
+      <span class="title-left" id="titleHistory">History Sesi</span>
+      <span class="count" id="historyCount">0 sesi</span>
+    </div>
+    <div id="historyList"></div>
+    <div class="history-actions">
+      <button id="exportHistoryBtn" class="btn-primary" disabled></button>
+      <button id="clearHistoryBtn" class="btn-danger" disabled></button>
+    </div>
+  </div>
+
+  </div><!-- /#screenshot-area -->
+
+  <!-- EXPORT UTAMA -->
   <div class="export-row">
-    <button id="exportBtn" class="primary" disabled>
-      <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="11" x2="12" y2="17"/><polyline points="9.5 14.5 12 17 14.5 14.5"/></svg></span>
-      CSV
-      <span class="sub-label">Excel</span>
-    </button>
-    <button id="copyBtn" disabled>
-      <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></span>
-      Salin
-      <span class="sub-label">Tab</span>
-    </button>
-    <button id="screenshotBtn" class="gold">
-      <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="2.18"/><line x1="8" y1="2" x2="8" y2="22"/><line x1="16" y1="2" x2="16" y2="22"/><line x1="2" y1="8" x2="22" y2="8"/><line x1="2" y1="16" x2="22" y2="16"/></svg></span>
-      JPG
-      <span class="sub-label">Screenshot</span>
-    </button>
+    <button id="exportBtn" class="btn-primary" disabled></button>
+    <button id="copyBtn" class="btn-outline" disabled></button>
+    <button id="screenshotBtn" class="btn-gold"></button>
   </div>
 </div>
 
 <script>
-// ===== STATE =====
+/* ===================== ICONS (inline SVG, no external font) ===================== */
+const ICONS = {
+  play:'<path d="M8 5v14l11-7z"/>',
+  pause:'<path d="M6 5h4v14H6zM14 5h4v14h-4z"/>',
+  flag:'<path d="M5 2v20h2v-8h4.5l1 2H19l-3-4.5L19 7h-6.5l-1-2H7V2z"/>',
+  bolt:'<path d="M13 2 3 14h7l-1 8 10-12h-7z"/>',
+  star:'<path d="M12 2l2.9 6.6 7.1.6-5.4 4.7 1.7 7-6.3-3.9L5.7 21l1.7-7L2 9.2l7.1-.6z"/>',
+  rotate:'<path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/>',
+  history:'<path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/><path d="M12 7v5l4 2"/>',
+  arrowDown:'<path d="M12 5v14"/><path d="M6 13l6 6 6-6"/>',
+  arrowUp:'<path d="M12 19V5"/><path d="M6 11l6-6 6 6"/>',
+  chartLine:'<path d="M3 3v18h18"/><path d="M7 15l4-5 3 3 5-7"/>',
+  chartBars:'<path d="M3 3v18h18"/><rect x="7" y="13" width="3" height="5"/><rect x="12" y="9" width="3" height="9"/><rect x="17" y="6" width="3" height="12"/>',
+  list:'<path d="M8 6h13"/><path d="M8 12h13"/><path d="M8 18h13"/><circle cx="3.5" cy="6" r="0.9" fill="currentColor" stroke="none"/><circle cx="3.5" cy="12" r="0.9" fill="currentColor" stroke="none"/><circle cx="3.5" cy="18" r="0.9" fill="currentColor" stroke="none"/>',
+  box:'<path d="M3 8l2-4h14l2 4"/><path d="M3 8v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8"/><path d="M3 8h18"/><path d="M9 12h6"/>',
+  archive:'<rect x="3" y="4" width="18" height="4" rx="1"/><path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8"/><path d="M10 12h4"/>',
+  edit:'<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/>',
+  clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/>',
+  stopwatch:'<circle cx="12" cy="13" r="8"/><path d="M12 9v4l3 2"/><path d="M9 2h6"/>',
+  gauge:'<path d="M12 21a9 9 0 1 1 0-18 9 9 0 0 1 0 18Z"/><path d="M12 12l4-4"/>',
+  road:'<path d="M4 21 9 3h6l5 18"/><path d="M12 8v3"/><path d="M12 14v3"/>',
+  medal:'<circle cx="12" cy="15" r="5"/><path d="M9 10 6 3h3l3 6"/><path d="M15 10 18 3h-3l-3 6"/>',
+  calculator:'<rect x="5" y="2" width="14" height="20" rx="2"/><path d="M9 6h6"/><path d="M8 11h.01M12 11h.01M16 11h.01M8 15h.01M12 15h.01M16 15h.01M8 19h.01M12 19h.01"/>',
+  chevronDown:'<path d="M6 9l6 6 6-6"/>',
+  chevronUp:'<path d="M18 15l-6-6-6 6"/>',
+  fileExport:'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M12 11v6"/><path d="M9.5 15.5 12 18l2.5-2.5"/>',
+  trash:'<path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/>',
+  close:'<path d="M18 6 6 18"/><path d="M6 6l12 12"/>',
+  calendar:'<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/>',
+  tag:'<path d="M20.59 13.41 12 22l-9-9V3h10l7.59 7.59a2 2 0 0 1 0 2.82Z"/><circle cx="7.5" cy="7.5" r="1.5"/>',
+  gear:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>',
+  camera:'<path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2Z"/><circle cx="12" cy="13" r="4"/>',
+  spinner:'<circle cx="12" cy="12" r="9" opacity="0.25"/><path d="M21 12a9 9 0 0 0-9-9"/>',
+  check:'<path d="M20 6 9 17l-5-5"/>',
+  copy:'<rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>'
+};
+const SOLID_ICONS = new Set(['play','pause','flag','bolt','star']);
+function icon(name, size) {
+  const inner = ICONS[name] || '';
+  const solid = SOLID_ICONS.has(name);
+  const style = size ? ` style="width:${size}px;height:${size}px"` : '';
+  if (solid) return `<svg class="icon-svg"${style} viewBox="0 0 24 24" fill="currentColor">${inner}</svg>`;
+  return `<svg class="icon-svg"${style} viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${inner}</svg>`;
+}
+
+/* ===================== STATE ===================== */
 let running = false;
 let startTime = 0;
 let lapStart = 0;
@@ -976,10 +494,9 @@ let animationId = null;
 let laps = [];
 let totalElapsedBeforePause = 0;
 let pauseElapsed = 0;
+let history = [];
 
-// ===== DOM =====
-const appEl = document.getElementById('app');
-const screenshotArea = document.getElementById('screenshot-area');
+/* ===================== DOM ===================== */
 const timerEl = document.getElementById('timer');
 const statusText = document.getElementById('statusText');
 const statusDot = document.getElementById('statusDot');
@@ -1003,18 +520,52 @@ const dateDisplay = document.getElementById('dateDisplay');
 const sessionInput = document.getElementById('sessionInput');
 const lowInput = document.getElementById('lowInput');
 const highInput = document.getElementById('highInput');
+const settingNotes = document.getElementById('settingNotes');
 const settingSummary = document.getElementById('settingSummary');
 
-// ===== PENILAIAN DOM =====
 const tTercepatInput = document.getElementById('tTercepat');
 const klTerbanyakInput = document.getElementById('klTerbanyak');
 const ntValue = document.getElementById('ntValue');
 const nklValue = document.getElementById('nklValue');
 const naValue = document.getElementById('naValue');
 
-// ===== TABS =====
+const historyList = document.getElementById('historyList');
+const historyCount = document.getElementById('historyCount');
+const exportHistoryBtn = document.getElementById('exportHistoryBtn');
+const clearHistoryBtn = document.getElementById('clearHistoryBtn');
+
+/* ===================== STATIC LABELS (icons + text, no emoji) ===================== */
+document.getElementById('heroFlagLabel').innerHTML = icon('flag',12) + ' Sesi Aktif';
+startBtn.innerHTML = icon('play') + ' <span class="btn-label">START</span>';
+lapBtn.innerHTML = icon('flag') + ' <span class="btn-label">LAP</span>';
+resetBtn.innerHTML = icon('rotate') + ' Reset sesi';
+document.getElementById('tabBtnTimer').innerHTML = icon('clock',14) + ' Timer';
+document.getElementById('tabBtnPenilaian').innerHTML = icon('chartLine',14) + ' Penilaian';
+document.getElementById('tabBtnHistory').innerHTML = icon('history',14) + ' History';
+document.getElementById('titleSetelan').innerHTML = icon('gear',14) + ' Setelan Karburator';
+document.getElementById('titleCatatan').innerHTML = icon('edit',14) + ' Catatan Hasil Trial';
+document.getElementById('titleGrafik').innerHTML = icon('chartBars',14) + ' Grafik Waktu Lap';
+document.getElementById('titleDataLap').innerHTML = icon('list',14) + ' Data Lap';
+document.getElementById('titlePenilaian').innerHTML = icon('medal',14) + ' Penilaian';
+document.getElementById('titleHistory').innerHTML = icon('archive',14) + ' History Sesi';
+document.getElementById('titleRumus').innerHTML = icon('calculator',14) + ' Rumus:';
+document.getElementById('labelTTercepat').innerHTML = icon('stopwatch',11) + ' T_tercepat (waktu tercepat seluruh peserta)';
+document.getElementById('labelKlTerbanyak').innerHTML = icon('flag',11) + ' KL_terbanyak (jumlah rintangan terbanyak)';
+document.getElementById('labelNT').innerHTML = icon('gauge',10) + ' NT';
+document.getElementById('labelNKL').innerHTML = icon('road',10) + ' NKL';
+document.getElementById('labelNA').innerHTML = icon('medal',10) + ' NA';
+document.getElementById('noteHint').innerHTML = icon('edit',10) + ' Klik kolom catatan untuk menambahkan keterangan (bisa multi-baris)';
+document.getElementById('lowInput').closest('.setting-field').querySelector('label').innerHTML = icon('arrowDown',11) + ' Low';
+document.getElementById('highInput').closest('.setting-field').querySelector('label').innerHTML = icon('arrowUp',11) + ' High';
+exportBtn.innerHTML = icon('fileExport') + ' CSV <span class="hint">Excel</span>';
+copyBtn.innerHTML = icon('copy') + ' Salin <span class="hint">Tab</span>';
+screenshotBtn.innerHTML = icon('camera') + ' JPG <span class="hint">Screenshot</span>';
+exportHistoryBtn.innerHTML = icon('fileExport') + ' Export All History';
+clearHistoryBtn.innerHTML = icon('trash') + ' Hapus Semua';
+
+/* ===================== TABS ===================== */
 document.querySelectorAll('.tab-btn').forEach(btn => {
-  btn.addEventListener('click', function() {
+  btn.addEventListener('click', function () {
     const tabId = this.dataset.tab;
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
     this.classList.add('active');
@@ -1022,36 +573,40 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
     document.getElementById(tabId).classList.add('active');
   });
 });
+function goToTimerTab() {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tabBtnTimer').classList.add('active');
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  document.getElementById('tabTimer').classList.add('active');
+}
 
-// ===== SET DATE =====
+/* ===================== DATE ===================== */
 function setDate() {
   const now = new Date();
-  const d = String(now.getDate()).padStart(2,'0');
-  const m = String(now.getMonth()+1).padStart(2,'0');
+  const d = String(now.getDate()).padStart(2, '0');
+  const m = String(now.getMonth() + 1).padStart(2, '0');
   const y = now.getFullYear();
-  dateDisplay.textContent = `${d}/${m}/${y}`;
+  const dateStr = `${d}/${m}/${y}`;
+  dateDisplay.textContent = dateStr;
+  return dateStr;
 }
 setDate();
 
-// ===== FORMAT =====
+/* ===================== FORMAT / PARSE ===================== */
 function format(ms) {
   if (ms < 0) ms = 0;
   const totalCentis = Math.floor(ms / 10);
-  const cs = String(totalCentis % 100).padStart(2,'0');
+  const cs = String(totalCentis % 100).padStart(2, '0');
   const totalSeconds = Math.floor(totalCentis / 100);
-  const s = String(totalSeconds % 60).padStart(2,'0');
-  const m = String(Math.floor(totalSeconds / 60)).padStart(2,'0');
+  const s = String(totalSeconds % 60).padStart(2, '0');
+  const m = String(Math.floor(totalSeconds / 60)).padStart(2, '0');
   return `${m}:${s}.${cs}`;
 }
-
-// ===== PARSE TIME =====
 function parseTime(str) {
-  str = str.trim();
+  str = (str || '').trim();
   if (!str) return 0;
   const asFloat = parseFloat(str);
-  if (!isNaN(asFloat) && str.indexOf(':') === -1) {
-    return asFloat * 1000;
-  }
+  if (!isNaN(asFloat) && str.indexOf(':') === -1) return asFloat * 1000;
   const parts = str.split(':');
   if (parts.length === 2) {
     const m = parseInt(parts[0]) || 0;
@@ -1067,70 +622,286 @@ function parseTime(str) {
   return 0;
 }
 
-// ===== HITUNG PENILAIAN =====
-function hitungPenilaian() {
-  const tTercepat = parseTime(tTercepatInput.value);
-  const klTerbanyak = parseFloat(klTerbanyakInput.value) || 1;
-  
-  const durations = laps.map(x => x.duration);
-  if (durations.length === 0) {
-    ntValue.textContent = '—';
-    nklValue.textContent = '—';
-    naValue.textContent = '—';
-    ntValue.className = 'nilai-value';
-    nklValue.className = 'nilai-value';
-    naValue.className = 'nilai-value';
-    return;
-  }
-  
-  const tAktual = Math.min(...durations);
-  const klAktual = laps.length;
-  
-  let nt = 0;
-  if (tAktual > 0 && tTercepat > 0) {
-    nt = (tTercepat / tAktual) * 100;
-  }
-  nt = Math.min(nt, 100);
-  
-  let nkl = 0;
-  if (klTerbanyak > 0) {
-    nkl = (klAktual / klTerbanyak) * 100;
-  }
-  nkl = Math.min(nkl, 100);
-  
-  const na = (0.5 * nt) + (0.5 * nkl);
-  
-  ntValue.textContent = nt.toFixed(1);
-  nklValue.textContent = nkl.toFixed(1);
-  naValue.textContent = na.toFixed(1);
-  
-  ntValue.className = 'nilai-value ' + (nt >= 80 ? 'high' : nt >= 60 ? 'medium' : 'low');
-  nklValue.className = 'nilai-value ' + (nkl >= 80 ? 'high' : nkl >= 60 ? 'medium' : 'low');
-  naValue.className = 'nilai-value ' + (na >= 80 ? 'high' : na >= 60 ? 'medium' : 'low');
-}
-
-// ===== HELPERS =====
+/* ===================== HELPERS ===================== */
 function escapeHtml(str) {
-  return String(str)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;');
+  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
-
 function autoGrow(textarea) {
   textarea.style.height = 'auto';
   textarea.style.height = textarea.scrollHeight + 'px';
 }
 
-// ===== UPDATE TIMER =====
-function updateTimer() {
-  if (!running) return;
-  const now = performance.now();
-  timerEl.innerHTML = format(now - lapStart);
-  animationId = requestAnimationFrame(updateTimer);
+/* ===================== PENILAIAN ===================== */
+function hitungPenilaian() {
+  const tTercepat = parseTime(tTercepatInput.value);
+  const klTerbanyak = parseFloat(klTerbanyakInput.value) || 1;
+  const durations = laps.map(x => x.duration);
+
+  if (!durations.length) {
+    ntValue.textContent = '—'; nklValue.textContent = '—'; naValue.textContent = '—';
+    ntValue.className = 'nilai-value'; nklValue.className = 'nilai-value'; naValue.className = 'nilai-value';
+    return;
+  }
+
+  const tAktual = Math.min(...durations);
+  const klAktual = laps.length;
+
+  let nt = (tAktual > 0 && tTercepat > 0) ? (tTercepat / tAktual) * 100 : 0;
+  nt = Math.min(nt, 100);
+  let nkl = klTerbanyak > 0 ? (klAktual / klTerbanyak) * 100 : 0;
+  nkl = Math.min(nkl, 100);
+  const na = 0.5 * nt + 0.5 * nkl;
+
+  ntValue.textContent = nt.toFixed(1);
+  nklValue.textContent = nkl.toFixed(1);
+  naValue.textContent = na.toFixed(1);
+  ntValue.className = 'nilai-value ' + (nt >= 80 ? 'high' : nt >= 60 ? 'medium' : 'low');
+  nklValue.className = 'nilai-value ' + (nkl >= 80 ? 'high' : nkl >= 60 ? 'medium' : 'low');
+  naValue.className = 'nilai-value ' + (na >= 80 ? 'high' : na >= 60 ? 'medium' : 'low');
 }
 
-// ===== RENDER LAPS =====
+/* ===================== SAVE / LOAD MAIN DATA (localStorage) ===================== */
+function saveData() {
+  try {
+    localStorage.setItem('lapTimerData', JSON.stringify({
+      laps, session: sessionInput.value, low: lowInput.value, high: highInput.value,
+      notes: settingNotes.value, tTercepat: tTercepatInput.value, klTerbanyak: klTerbanyakInput.value,
+      date: dateDisplay.textContent, running, startTime, lapStart, totalElapsedBeforePause, pauseElapsed,
+      timerText: timerEl.innerHTML
+    }));
+  } catch (e) { /* storage unavailable, ignore */ }
+}
+function loadData() {
+  try {
+    const saved = localStorage.getItem('lapTimerData');
+    if (!saved) return false;
+    const data = JSON.parse(saved);
+    laps = data.laps || [];
+    sessionInput.value = data.session || 'Uji-01';
+    lowInput.value = data.low || '';
+    highInput.value = data.high || '';
+    settingNotes.value = data.notes || '';
+    tTercepatInput.value = data.tTercepat || '00:01.58';
+    klTerbanyakInput.value = data.klTerbanyak || '10';
+    dateDisplay.textContent = data.date || setDate();
+    if (data.timerText) timerEl.innerHTML = data.timerText;
+    running = data.running || false;
+    startTime = data.startTime || 0;
+    lapStart = data.lapStart || 0;
+    totalElapsedBeforePause = data.totalElapsedBeforePause || 0;
+    pauseElapsed = data.pauseElapsed || 0;
+
+    if (running && startTime > 0) {
+      startBtn.innerHTML = icon('pause') + ' <span class="btn-label">PAUSE</span>';
+      startBtn.className = 'running';
+      lapBtn.disabled = false;
+      setStatus('Berjalan...', 'running');
+      animationId = requestAnimationFrame(updateTimer);
+    } else {
+      running = false; startTime = 0; lapStart = 0;
+    }
+
+    renderLaps();
+    hitungPenilaian();
+    updateSettingSummary();
+    return true;
+  } catch (e) { return false; }
+}
+
+/* ===================== HISTORY ===================== */
+function loadHistory() {
+  try {
+    const saved = localStorage.getItem('lapTimerHistory');
+    if (saved) { history = JSON.parse(saved); renderHistory(); }
+  } catch (e) { /* ignore */ }
+}
+function saveHistory() {
+  try { localStorage.setItem('lapTimerHistory', JSON.stringify(history)); } catch (e) { /* ignore */ }
+  renderHistory();
+}
+function saveCurrentSession() {
+  if (!laps.length) return;
+  const durations = laps.map(x => x.duration);
+  const avg = durations.reduce((a, b) => a + b, 0) / durations.length;
+  const best = Math.min(...durations);
+  const total = durations.reduce((a, b) => a + b, 0);
+
+  history.unshift({
+    id: Date.now(),
+    date: dateDisplay.textContent,
+    sessionName: sessionInput.value || 'Tanpa Nama',
+    laps: JSON.parse(JSON.stringify(laps)),
+    low: lowInput.value || '-',
+    high: highInput.value || '-',
+    notes: settingNotes.value || '-',
+    summary: { totalLaps: laps.length, avg: format(avg), best: format(best), total: format(total) },
+    _expanded: false
+  });
+  if (history.length > 50) history.pop();
+  saveHistory();
+}
+
+function renderHistory() {
+  const count = history.length;
+  historyCount.textContent = `${count} sesi`;
+
+  if (!count) {
+    historyList.innerHTML = `<div class="empty">${icon('box', 26)}Belum ada sesi tersimpan</div>`;
+    exportHistoryBtn.disabled = true;
+    clearHistoryBtn.disabled = true;
+    return;
+  }
+  exportHistoryBtn.disabled = false;
+  clearHistoryBtn.disabled = false;
+
+  historyList.innerHTML = history.map(s => {
+    const isExpanded = !!s._expanded;
+    const bestTime = Math.min(...s.laps.map(l => l.duration));
+    const detailRows = s.laps.map(lap => `
+      <div class="history-detail-row" style="background:${lap.duration === bestTime ? 'var(--gold-soft)' : 'transparent'};">
+        <span style="font-weight:700;color:var(--ink-dim);">${lap.number}</span>
+        <span style="font-weight:600;color:${lap.duration === bestTime ? '#b6790f' : 'var(--ink)'};">${format(lap.duration)}</span>
+        <span style="color:var(--ink-dim);">${format(lap.total)}</span>
+        <span class="note-cell">${escapeHtml(lap.note || '-')}</span>
+      </div>`).join('');
+
+    return `
+      <div class="history-item" data-id="${s.id}">
+        <div class="history-header">
+          <div>
+            <div class="history-title">${icon('flag', 13)} ${escapeHtml(s.sessionName)}</div>
+            <div class="history-date">${icon('calendar', 11)} ${s.date} &middot; ${icon('tag', 11)} ${s.laps.length} lap</div>
+          </div>
+          <div class="history-right">
+            <div class="history-total">${s.summary.total}</div>
+            <div class="history-best">${icon('bolt', 10)} ${s.summary.best}</div>
+          </div>
+        </div>
+        <div class="history-summary">
+          <div>${icon('chartBars',10)} Rata-rata: <span>${s.summary.avg}</span></div>
+          <div>${icon('bolt',10)} Tercepat: <span class="best">${s.summary.best}</span></div>
+          <div>${icon('gear',10)} Setelan: <span>L:${escapeHtml(s.low)} H:${escapeHtml(s.high)}</span></div>
+        </div>
+        <div class="history-actions-row">
+          <button class="mini-btn toggle-detail" data-id="${s.id}">${icon(isExpanded ? 'chevronUp' : 'chevronDown', 11)} ${isExpanded ? 'Sembunyikan' : 'Lihat Detail'}</button>
+          <button class="mini-btn primary export-session" data-id="${s.id}">${icon('fileExport', 11)} Export CSV</button>
+          <button class="mini-btn gold restore-session" data-id="${s.id}">${icon('rotate', 11)} Restore</button>
+          <button class="mini-btn danger-icon delete-session" data-id="${s.id}">${icon('close', 14)}</button>
+        </div>
+        <div class="history-detail" style="display:${isExpanded ? 'block' : 'none'};">
+          <div class="history-detail-header"><span>#</span><span>Waktu</span><span>Total</span><span>Catatan</span></div>
+          ${detailRows}
+          <div class="history-legend">${icon('star', 10)} = Lap tercepat</div>
+        </div>
+      </div>`;
+  }).join('');
+
+  document.querySelectorAll('.toggle-detail').forEach(btn => btn.addEventListener('click', e => {
+    e.stopPropagation();
+    const id = parseInt(btn.dataset.id);
+    const s = history.find(x => x.id === id);
+    if (s) { s._expanded = !s._expanded; saveHistory(); }
+  }));
+  document.querySelectorAll('.export-session').forEach(btn => btn.addEventListener('click', e => {
+    e.stopPropagation();
+    const id = parseInt(btn.dataset.id);
+    const s = history.find(x => x.id === id);
+    if (s) exportSingleSession(s);
+  }));
+  document.querySelectorAll('.restore-session').forEach(btn => btn.addEventListener('click', e => {
+    e.stopPropagation();
+    const id = parseInt(btn.dataset.id);
+    const s = history.find(x => x.id === id);
+    if (s && confirm(`Restore sesi "${s.sessionName}"? Data saat ini akan diganti.`)) restoreSession(s);
+  }));
+  document.querySelectorAll('.delete-session').forEach(btn => btn.addEventListener('click', e => {
+    e.stopPropagation();
+    const id = parseInt(btn.dataset.id);
+    if (confirm('Hapus sesi ini?')) { history = history.filter(x => x.id !== id); saveHistory(); }
+  }));
+  document.querySelectorAll('.history-header').forEach(h => h.addEventListener('click', function () {
+    const btn = this.closest('.history-item').querySelector('.toggle-detail');
+    if (btn) btn.click();
+  }));
+}
+
+function restoreSession(session) {
+  if (running) { running = false; cancelAnimationFrame(animationId); }
+  startTime = 0; lapStart = 0; totalElapsedBeforePause = 0; pauseElapsed = 0;
+
+  laps = JSON.parse(JSON.stringify(session.laps));
+  sessionInput.value = session.sessionName;
+  lowInput.value = session.low === '-' ? '' : session.low;
+  highInput.value = session.high === '-' ? '' : session.high;
+  settingNotes.value = session.notes === '-' ? '' : (session.notes || '');
+
+  timerEl.innerHTML = '00:00<span class="ms">.00</span>';
+  startBtn.innerHTML = icon('play') + ' <span class="btn-label">START</span>';
+  startBtn.className = '';
+  lapBtn.disabled = true;
+  setStatus(`Sesi "${session.sessionName}" dipulihkan (${session.laps.length} lap)`, 'idle');
+
+  renderLaps();
+  hitungPenilaian();
+  updateSettingSummary();
+  saveData();
+  goToTimerTab();
+}
+
+/* ===================== SHARED EXPORT HELPERS ===================== */
+// quote=true wraps non-numeric cells in quotes (safe for Excel); numbers stay unquoted.
+function rowsToDelimited(rows, delimiter, quote) {
+  return rows.map(row => row.map(cell => {
+    let str = cell === undefined || cell === null ? '' : String(cell);
+    if (!quote) return str.replace(/\t/g, ' ');
+    if (str === '') return '';
+    const isNumeric = /^-?\d+(\.\d+)?$/.test(str);
+    if (isNumeric) return str;
+    return '"' + str.replace(/"/g, '""') + '"';
+  }).join(delimiter)).join('\n');
+}
+function lapsToRows(dateStr, sessionName, low, high, notes, lapArray) {
+  const rows = [];
+  rows.push(['Tanggal', dateStr]);
+  rows.push(['Sesi', sessionName]);
+  rows.push(['Setelan Low', low || '-']);
+  rows.push(['Setelan High', high || '-']);
+  rows.push(['Karakteristik', (notes || '').trim().replace(/\r?\n/g, ' | ') || '-']);
+  rows.push([]);
+  rows.push(['Tanggal', 'Sesi', 'Lap', 'Waktu Lap (ms)', 'Waktu Lap', 'Total Waktu', 'Catatan']);
+  lapArray.forEach(x => {
+    const note = (x.note || '').trim().replace(/\r?\n/g, ' | ');
+    rows.push([dateStr, sessionName, x.number, x.duration.toFixed(1), format(x.duration), format(x.total), note]);
+  });
+  if (lapArray.length) {
+    const durations = lapArray.map(x => x.duration);
+    const avg = durations.reduce((a, b) => a + b, 0) / durations.length;
+    const best = Math.min(...durations);
+    const total = durations.reduce((a, b) => a + b, 0);
+    rows.push([]);
+    rows.push(['Ringkasan']);
+    rows.push(['Jumlah Lap', lapArray.length]);
+    rows.push(['Rata-rata', format(avg)]);
+    rows.push(['Tercepat', format(best)]);
+    rows.push(['Total', format(total)]);
+  }
+  return rows;
+}
+function downloadText(filename, mime, text) {
+  const blob = new Blob(['\uFEFF' + text], { type: mime });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename; a.click();
+  URL.revokeObjectURL(url);
+}
+
+function exportSingleSession(session) {
+  const rows = lapsToRows(session.date, session.sessionName, session.low, session.high, session.notes, session.laps);
+  const csv = rowsToDelimited(rows, ';', true);
+  downloadText(`session-${session.sessionName}-${session.date.replace(/\//g, '-')}.csv`, 'text/csv;charset=utf-8;', csv);
+}
+
+/* ===================== RENDER LAPS ===================== */
 function renderLaps() {
   const count = laps.length;
   lapCount.textContent = count;
@@ -1138,13 +909,9 @@ function renderLaps() {
   lapCountLabel.textContent = `${count} lap`;
 
   if (!count) {
-    lapList.innerHTML = `<div class="empty"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg></span>Belum ada data lap</div>`;
-    avgEl.textContent = '—';
-    avgDisplay.textContent = '· Rata-rata —';
-    bestEl.textContent = '—';
-    totalTimeEl.textContent = '—';
-    exportBtn.disabled = true;
-    copyBtn.disabled = true;
+    lapList.innerHTML = `<div class="empty">${icon('clock', 26)}Belum ada data lap</div>`;
+    avgEl.textContent = '—'; avgDisplay.textContent = '· Rata-rata —'; bestEl.textContent = '—'; totalTimeEl.textContent = '—';
+    exportBtn.disabled = true; copyBtn.disabled = true;
     chartHint.textContent = 'Belum ada data';
     lapChart.innerHTML = '';
     hitungPenilaian();
@@ -1152,9 +919,9 @@ function renderLaps() {
   }
 
   const durations = laps.map(x => x.duration);
-  const avg = durations.reduce((a,b) => a + b, 0) / durations.length;
+  const avg = durations.reduce((a, b) => a + b, 0) / durations.length;
   const best = Math.min(...durations);
-  const total = durations.reduce((a,b) => a + b, 0);
+  const total = durations.reduce((a, b) => a + b, 0);
 
   avgEl.textContent = format(avg);
   avgDisplay.textContent = `· Rata-rata ${format(avg)}`;
@@ -1164,39 +931,34 @@ function renderLaps() {
   copyBtn.disabled = false;
 
   lapList.innerHTML = laps.map((x, index) => {
-    const isBest = x.duration === best && count > 0;
-    const starSvg = isBest
-      ? '<span class="best-star"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.6-5.4 4.7 1.7 7-6.3-3.9L5.7 21l1.7-7L2 9.2l7.1-.6z"/></svg></span>'
-      : '';
+    const isBest = x.duration === best;
+    const starSvg = isBest ? `<svg class="best-star" viewBox="0 0 24 24" fill="currentColor">${ICONS.star}</svg>` : '';
     const safeNote = escapeHtml(x.note || '');
     return `
       <div class="lap-row ${isBest ? 'best' : ''}" data-index="${index}">
         <span class="lap-number">${x.number}${starSvg}</span>
         <span class="lap-time">${format(x.duration)}</span>
         <span class="lap-total">${format(x.total)}</span>
-        <span class="lap-note-wrap">
-          <textarea class="lap-note-input" rows="1"
-                 placeholder="Catatan..."
-                 data-index="${index}">${safeNote}</textarea>
-        </span>
-      </div>
-    `;
+        <span><textarea class="lap-note-input" rows="1" placeholder="Catatan..." data-index="${index}">${safeNote}</textarea></span>
+      </div>`;
   }).join('');
 
   document.querySelectorAll('.lap-note-input').forEach(textarea => {
     autoGrow(textarea);
     let timeoutId = null;
-    textarea.addEventListener('input', function() {
+    textarea.addEventListener('input', function () {
       autoGrow(this);
       clearTimeout(timeoutId);
       timeoutId = setTimeout(() => {
         const idx = parseInt(this.dataset.index);
         if (laps[idx]) laps[idx].note = this.value;
+        saveData();
       }, 300);
     });
-    textarea.addEventListener('change', function() {
+    textarea.addEventListener('change', function () {
       const idx = parseInt(this.dataset.index);
       if (laps[idx]) laps[idx].note = this.value;
+      saveData();
     });
   });
 
@@ -1205,12 +967,10 @@ function renderLaps() {
   hitungPenilaian();
 }
 
-// ===== RENDER CHART =====
+/* ===================== CHART ===================== */
 function renderChart(durations, best) {
-  const W = 400, H = 160;
-  const padTop = 20, padBottom = 26, padSide = 14;
-  const max = Math.max(...durations);
-  const min = Math.min(...durations);
+  const W = 400, H = 160, padTop = 20, padBottom = 26, padSide = 14;
+  const max = Math.max(...durations), min = Math.min(...durations);
   const range = (max - min) || 1;
   const n = durations.length;
   const chartH = H - padTop - padBottom;
@@ -1223,20 +983,12 @@ function renderChart(durations, best) {
   });
 
   function smoothPath(pts) {
-    if (pts.length < 2) {
-      const p = pts[0];
-      return `M${p.x.toFixed(1)},${p.y.toFixed(1)} L${p.x.toFixed(1)},${p.y.toFixed(1)}`;
-    }
+    if (pts.length < 2) { const p = pts[0]; return `M${p.x.toFixed(1)},${p.y.toFixed(1)} L${p.x.toFixed(1)},${p.y.toFixed(1)}`; }
     let d = `M${pts[0].x.toFixed(1)},${pts[0].y.toFixed(1)} `;
     for (let i = 0; i < pts.length - 1; i++) {
-      const p0 = pts[i === 0 ? 0 : i - 1];
-      const p1 = pts[i];
-      const p2 = pts[i + 1];
-      const p3 = pts[i + 2 < pts.length ? i + 2 : i + 1];
-      const cp1x = p1.x + (p2.x - p0.x) / 6;
-      const cp1y = p1.y + (p2.y - p0.y) / 6;
-      const cp2x = p2.x - (p3.x - p1.x) / 6;
-      const cp2y = p2.y - (p3.y - p1.y) / 6;
+      const p0 = pts[i === 0 ? 0 : i - 1], p1 = pts[i], p2 = pts[i + 1], p3 = pts[i + 2 < pts.length ? i + 2 : i + 1];
+      const cp1x = p1.x + (p2.x - p0.x) / 6, cp1y = p1.y + (p2.y - p0.y) / 6;
+      const cp2x = p2.x - (p3.x - p1.x) / 6, cp2y = p2.y - (p3.y - p1.y) / 6;
       d += `C${cp1x.toFixed(1)},${cp1y.toFixed(1)} ${cp2x.toFixed(1)},${cp2y.toFixed(1)} ${p2.x.toFixed(1)},${p2.y.toFixed(1)} `;
     }
     return d;
@@ -1245,8 +997,7 @@ function renderChart(durations, best) {
   const linePath = smoothPath(points);
   const baseline = H - padBottom;
   const areaPath = `${linePath} L${points[points.length - 1].x.toFixed(1)},${baseline} L${points[0].x.toFixed(1)},${baseline} Z`;
-
-  const dots = points.map((p, i) => {
+  const dots = points.map(p => {
     const r = p.isBest ? 4.2 : 2.6;
     const fill = p.isBest ? '#f5a524' : '#6d5bf0';
     return `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="${r}" fill="${fill}" stroke="#ffffff" stroke-width="1.4"></circle>`;
@@ -1255,9 +1006,7 @@ function renderChart(durations, best) {
   let labels = '';
   points.forEach((p, i) => {
     const showLabel = n <= 8 || i % Math.ceil(n / 8) === 0 || i === n - 1;
-    if (showLabel) {
-      labels += `<text x="${p.x.toFixed(1)}" y="${H - 8}" font-size="9" text-anchor="middle" fill="#6b7099">${i + 1}</text>`;
-    }
+    if (showLabel) labels += `<text x="${p.x.toFixed(1)}" y="${H - 8}" font-size="9" text-anchor="middle" fill="#6b7099">${i + 1}</text>`;
   });
 
   const bestPoint = points.find(p => p.isBest);
@@ -1266,275 +1015,190 @@ function renderChart(durations, best) {
     : '';
 
   lapChart.innerHTML = `
-    <defs>
-      <linearGradient id="lapAreaFill" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%" stop-color="#6d5bf0" stop-opacity="0.28"></stop>
-        <stop offset="100%" stop-color="#6d5bf0" stop-opacity="0"></stop>
-      </linearGradient>
-    </defs>
+    <defs><linearGradient id="lapAreaFill" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#6d5bf0" stop-opacity="0.28"></stop>
+      <stop offset="100%" stop-color="#6d5bf0" stop-opacity="0"></stop>
+    </linearGradient></defs>
     <path d="${areaPath}" fill="url(#lapAreaFill)"></path>
     <path d="${linePath}" fill="none" stroke="#6d5bf0" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"></path>
-    ${dots}
-    ${bestLabel}
-    ${labels}
-  `;
+    ${dots}${bestLabel}${labels}`;
 }
 
-// ===== SET STATUS =====
+/* ===================== STATUS ===================== */
 function setStatus(text, type) {
   statusText.textContent = text;
   statusDot.className = 'dot ' + type;
 }
 
-// ===== UPDATE SETTING SUMMARY =====
+/* ===================== SETTING SUMMARY ===================== */
 function updateSettingSummary() {
-  const low = lowInput.value.trim();
-  const high = highInput.value.trim();
-  if (!low && !high) {
-    settingSummary.textContent = 'Belum diisi';
-    settingSummary.className = 'count';
-  } else {
-    settingSummary.textContent = `Low ${low || '—'} · High ${high || '—'}`;
-    settingSummary.className = 'count filled';
-  }
+  const low = lowInput.value.trim(), high = highInput.value.trim();
+  if (!low && !high) { settingSummary.textContent = 'Belum diisi'; settingSummary.className = 'count'; }
+  else { settingSummary.textContent = `Low ${low || '—'} · High ${high || '—'}`; settingSummary.className = 'count filled'; }
 }
 
-lowInput.addEventListener('input', updateSettingSummary);
-highInput.addEventListener('input', updateSettingSummary);
-updateSettingSummary();
+/* ===================== TIMER LOOP ===================== */
+function updateTimer() {
+  if (!running) return;
+  timerEl.innerHTML = format(performance.now() - lapStart);
+  animationId = requestAnimationFrame(updateTimer);
+}
 
-// ===== EVENT PENILAIAN =====
-tTercepatInput.addEventListener('input', hitungPenilaian);
-klTerbanyakInput.addEventListener('input', hitungPenilaian);
-
-// ===== START / PAUSE =====
+/* ===================== START / PAUSE ===================== */
 startBtn.addEventListener('click', () => {
   if (!running) {
     const now = performance.now();
-    if (startTime === 0) {
-      startTime = now;
-      lapStart = now;
-    } else {
-      startTime = now - totalElapsedBeforePause;
-      lapStart = now - pauseElapsed;
-    }
+    if (startTime === 0) { startTime = now; lapStart = now; }
+    else { startTime = now - totalElapsedBeforePause; lapStart = now - pauseElapsed; }
     running = true;
-    startBtn.innerHTML = '<span class="icon"><svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg></span> <span class="btn-label">PAUSE</span>';
+    startBtn.innerHTML = icon('pause') + ' <span class="btn-label">PAUSE</span>';
     startBtn.className = 'running';
     lapBtn.disabled = false;
     setStatus('Berjalan...', 'running');
     animationId = requestAnimationFrame(updateTimer);
+    saveData();
   } else {
     const now = performance.now();
     totalElapsedBeforePause = now - startTime;
     pauseElapsed = now - lapStart;
     running = false;
     cancelAnimationFrame(animationId);
-    startBtn.innerHTML = '<span class="icon"><svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg></span> <span class="btn-label">LANJUT</span>';
+    startBtn.innerHTML = icon('play') + ' <span class="btn-label">LANJUT</span>';
     startBtn.className = '';
     lapBtn.disabled = true;
     setStatus('Dijeda', 'paused');
+    saveData();
   }
 });
 
-// ===== LAP =====
+/* ===================== LAP ===================== */
 lapBtn.addEventListener('click', () => {
   if (!running) return;
   const now = performance.now();
   const duration = now - lapStart;
   const total = now - startTime;
-
-  laps.push({
-    number: laps.length + 1,
-    duration: duration,
-    total: total,
-    note: ''
-  });
-
+  laps.push({ number: laps.length + 1, duration, total, note: '' });
   lapStart = now;
   timerEl.innerHTML = '00:00<span class="ms">.00</span>';
   renderLaps();
   setStatus(`Lap ${laps.length} selesai (${format(duration)})`, 'running');
-
-  // AUTO-FOCUS DIHAPUS - TIDAK SCROLL KE BAWAH
+  saveData();
 });
 
-// ===== RESET =====
+/* ===================== RESET ===================== */
 resetBtn.addEventListener('click', () => {
+  if (laps.length > 0) saveCurrentSession();
   running = false;
   cancelAnimationFrame(animationId);
-  startTime = 0;
-  lapStart = 0;
-  totalElapsedBeforePause = 0;
-  pauseElapsed = 0;
+  startTime = 0; lapStart = 0; totalElapsedBeforePause = 0; pauseElapsed = 0;
   laps = [];
   timerEl.innerHTML = '00:00<span class="ms">.00</span>';
-  startBtn.innerHTML = '<span class="icon"><svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg></span> <span class="btn-label">START</span>';
+  startBtn.innerHTML = icon('play') + ' <span class="btn-label">START</span>';
   startBtn.className = '';
   lapBtn.disabled = true;
   setStatus('Siap', 'idle');
   renderLaps();
+  saveData();
 });
 
-// ===== BUILD DATA FOR EXPORT =====
-function buildExportData() {
-  const today = dateDisplay.textContent;
-  const session = sessionInput.value.trim() || 'Tanpa Sesi';
-  const low = lowInput.value.trim() || '-';
-  const high = highInput.value.trim() || '-';
-  const tTercepat = tTercepatInput.value.trim() || '-';
-  const klTerbanyak = klTerbanyakInput.value || '-';
+/* ===================== AUTO-SAVE EVENTS ===================== */
+sessionInput.addEventListener('input', saveData);
+lowInput.addEventListener('input', () => { updateSettingSummary(); saveData(); });
+highInput.addEventListener('input', () => { updateSettingSummary(); saveData(); });
+settingNotes.addEventListener('input', saveData);
+tTercepatInput.addEventListener('input', () => { hitungPenilaian(); saveData(); });
+klTerbanyakInput.addEventListener('input', () => { hitungPenilaian(); saveData(); });
 
-  const data = [];
-
-  data.push(['Tanggal', today]);
-  data.push(['Sesi', session]);
-  data.push(['Setelan Low', low]);
-  data.push(['Setelan High', high]);
-  data.push(['T_tercepat', tTercepat]);
-  data.push(['KL_terbanyak', klTerbanyak]);
-  data.push([]);
-
-  const nt = ntValue.textContent;
-  const nkl = nklValue.textContent;
-  const na = naValue.textContent;
-  data.push(['NT (Kecepatan)', nt]);
-  data.push(['NKL (Endurance)', nkl]);
-  data.push(['NA (Nilai Akhir)', na]);
-  data.push([]);
-
-  data.push(['Tanggal', 'Sesi', 'Lap', 'Waktu Lap (ms)', 'Waktu Lap', 'Total Waktu', 'Catatan']);
-
-  laps.forEach(x => {
-    const note = (x.note || '').trim().replace(/\r?\n/g, ' | ');
-    data.push([today, session, x.number, x.duration.toFixed(1), format(x.duration), format(x.total), note]);
-  });
-
-  if (laps.length) {
-    const durations = laps.map(x => x.duration);
-    const avg = durations.reduce((a,b) => a + b, 0) / durations.length;
-    const best = Math.min(...durations);
-    const total = durations.reduce((a,b) => a + b, 0);
-    data.push([]);
-    data.push(['Ringkasan']);
-    data.push(['Jumlah Lap', laps.length]);
-    data.push(['Rata-rata', format(avg)]);
-    data.push(['Tercepat', format(best)]);
-    data.push(['Total', format(total)]);
-  }
-
-  return data;
-}
-
-// ===== EXPORT CSV =====
+/* ===================== EXPORT CSV / COPY (current session) ===================== */
 exportBtn.addEventListener('click', () => {
-  const data = buildExportData();
-  const tsv = data.map(row =>
-    row.map(cell => {
-      const str = String(cell === undefined || cell === null ? '' : cell);
-      if (str.includes('\t') || str.includes('\n') || str.includes('"')) {
-        return '"' + str.replace(/"/g, '""') + '"';
-      }
-      return str;
-    }).join('\t')
-  ).join('\n');
-
-  const blob = new Blob(['\uFEFF' + tsv], { type: 'text/tab-separated-values;charset=utf-8' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `lap-timer-${dateDisplay.textContent.replace(/\//g,'-')}-${sessionInput.value.trim() || 'session'}.csv`;
-  a.click();
-  URL.revokeObjectURL(url);
+  const rows = lapsToRows(dateDisplay.textContent, sessionInput.value.trim() || 'Tanpa Sesi', lowInput.value, highInput.value, settingNotes.value, laps);
+  const csv = rowsToDelimited(rows, ';', true);
+  downloadText(`lap-timer-${dateDisplay.textContent.replace(/\//g, '-')}-${sessionInput.value.trim() || 'session'}.csv`, 'text/csv;charset=utf-8;', csv);
 });
 
-// ===== COPY DATA =====
 copyBtn.addEventListener('click', () => {
-  const data = buildExportData();
-  const tsv = data.map(row =>
-    row.map(cell => String(cell === undefined || cell === null ? '' : cell))
-      .join('\t')
-  ).join('\n');
-
+  const rows = lapsToRows(dateDisplay.textContent, sessionInput.value.trim() || 'Tanpa Sesi', lowInput.value, highInput.value, settingNotes.value, laps);
+  const tsv = rowsToDelimited(rows, '\t', false);
   navigator.clipboard.writeText(tsv).then(() => {
     setStatus('Data disalin!', 'paused');
-    setTimeout(() => {
-      if (running) setStatus('Berjalan...', 'running');
-      else setStatus('Siap', 'idle');
-    }, 1500);
-  }).catch(() => {
-    setStatus('Gagal menyalin', 'idle');
-  });
+    setTimeout(() => setStatus(running ? 'Berjalan...' : 'Siap', running ? 'running' : 'idle'), 1500);
+  }).catch(() => setStatus('Gagal menyalin', 'idle'));
 });
 
-// ===== SCREENSHOT TO JPG =====
-screenshotBtn.addEventListener('click', function() {
+/* ===================== EXPORT / CLEAR HISTORY ===================== */
+exportHistoryBtn.addEventListener('click', () => {
+  if (!history.length) return;
+  const rows = [['Tanggal', 'Sesi', 'Lap', 'Waktu Lap', 'Total Waktu', 'Catatan', 'Low', 'High']];
+  history.forEach(s => {
+    s.laps.forEach(lap => {
+      const note = (lap.note || '').trim().replace(/\r?\n/g, ' | ');
+      rows.push([s.date, s.sessionName, lap.number, format(lap.duration), format(lap.total), note, s.low, s.high]);
+    });
+  });
+  const csv = rowsToDelimited(rows, ';', true);
+  downloadText(`history-${new Date().toISOString().slice(0, 10)}.csv`, 'text/csv;charset=utf-8;', csv);
+});
+
+clearHistoryBtn.addEventListener('click', () => {
+  if (!history.length) return;
+  if (confirm('Hapus semua history? Data tidak bisa dikembalikan.')) { history = []; saveHistory(); }
+});
+
+/* ===================== SCREENSHOT TO JPG (optional, needs internet once) ===================== */
+let html2canvasLoading = null;
+function loadHtml2Canvas() {
+  if (window.html2canvas) return Promise.resolve();
+  if (html2canvasLoading) return html2canvasLoading;
+  html2canvasLoading = new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+    s.onload = () => resolve();
+    s.onerror = () => reject(new Error('offline'));
+    document.head.appendChild(s);
+  });
+  return html2canvasLoading;
+}
+
+screenshotBtn.addEventListener('click', function () {
   const btn = this;
-  const originalText = btn.innerHTML;
-  btn.innerHTML = '<span style="font-size:14px;">⏳</span> Memproses...';
+  const original = btn.innerHTML;
+  btn.innerHTML = `${icon('spinner')} Memuat...`;
+  btn.querySelector('.icon-svg').classList.add('spin');
   btn.disabled = true;
 
-  const area = document.getElementById('screenshot-area');
-  const rect = area.getBoundingClientRect();
-  const width = rect.width;
-  const height = rect.height;
-
-  html2canvas(area, {
-    scale: 3,
-    useCORS: true,
-    allowTaint: true,
-    backgroundColor: '#eef1fb',
-    logging: false,
-    width: width,
-    height: height,
-    windowWidth: width,
-    windowHeight: height,
-    x: 0,
-    y: 0,
-    scrollX: 0,
-    scrollY: 0,
+  loadHtml2Canvas().then(() => {
+    btn.innerHTML = `${icon('spinner')} Memproses...`;
+    btn.querySelector('.icon-svg').classList.add('spin');
+    const area = document.getElementById('screenshot-area');
+    return window.html2canvas(area, { scale: 3, backgroundColor: '#eef1fb', logging: false });
   }).then(canvas => {
-    const link = document.createElement('a');
-    const filename = `lap-timer-${dateDisplay.textContent.replace(/\//g,'-')}-${sessionInput.value.trim() || 'session'}.jpg`;
-    link.download = filename;
-    link.href = canvas.toDataURL('image/jpeg', 0.98);
-    link.click();
-    btn.innerHTML = '✅ Tersimpan!';
-    setTimeout(() => {
-      btn.innerHTML = originalText;
-      btn.disabled = false;
-    }, 1500);
+    const a = document.createElement('a');
+    a.download = `lap-timer-${dateDisplay.textContent.replace(/\//g, '-')}-${sessionInput.value.trim() || 'session'}.jpg`;
+    a.href = canvas.toDataURL('image/jpeg', 0.95);
+    a.click();
+    btn.innerHTML = icon('check') + ' Tersimpan!';
+    setTimeout(() => { btn.innerHTML = original; btn.disabled = false; }, 1500);
   }).catch(err => {
-    console.error('Gagal screenshot:', err);
-    btn.innerHTML = '❌ Gagal';
-    setTimeout(() => {
-      btn.innerHTML = originalText;
-      btn.disabled = false;
-    }, 1500);
+    const msg = err && err.message === 'offline'
+      ? 'Butuh internet (sekali) untuk fitur ini'
+      : 'Gagal membuat gambar';
+    btn.innerHTML = icon('close') + ' ' + msg;
+    setTimeout(() => { btn.innerHTML = original; btn.disabled = false; }, 2200);
   });
 });
 
-// ===== KEYBOARD SHORTCUTS =====
+/* ===================== KEYBOARD SHORTCUTS ===================== */
 document.addEventListener('keydown', (e) => {
   const tag = e.target.tagName;
-  const isTypingField = tag === 'INPUT' || tag === 'TEXTAREA';
-  if (isTypingField) return;
-
-  if (e.key === 'Enter' || e.key === ' ') {
-    e.preventDefault();
-    if (!lapBtn.disabled) lapBtn.click();
-  }
-  if (e.key === 's' || e.key === 'S') {
-    startBtn.click();
-  }
+  if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+  if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); if (!lapBtn.disabled) lapBtn.click(); }
+  if (e.key === 's' || e.key === 'S') startBtn.click();
 });
 
-hitungPenilaian();
-
-console.log('✅ Lap Timer ABHISARA siap digunakan!');
-console.log('📊 Penilaian ada di tab terpisah dengan ikon premium');
-console.log('📸 Tombol JPG untuk screenshot');
-console.log('✅ Auto-focus dihilangkan, klik LAP tidak scroll ke bawah');
+/* ===================== INIT ===================== */
+const hasSavedData = loadData();
+if (!hasSavedData) { renderLaps(); hitungPenilaian(); updateSettingSummary(); }
+loadHistory();
 </script>
 </body>
 </html>
