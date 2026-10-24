@@ -221,19 +221,20 @@
   .view-btn:hover{border-color:var(--primary-1);color:var(--primary-1);}
 
   /* ===== TAMPILAN LAPTOP / DESKTOP (class di-set lewat JS) ===== */
+  .col-left,.col-right{display:contents;}   /* mode HP: layout tidak berubah */
   body.view-desktop{padding:28px 32px 48px;}
-  body.view-desktop .app{max-width:1180px;}
-  body.view-desktop #screenshot-area{display:grid;grid-template-columns:400px minmax(0,1fr);column-gap:28px;align-items:start;padding:28px 32px 34px;}
+  body.view-desktop .app{max-width:1240px;}
+  body.view-desktop #screenshot-area{display:grid;grid-template-columns:420px minmax(0,1fr);column-gap:32px;align-items:start;padding:28px 32px 34px;}
   body.view-desktop .topbar{grid-column:1 / -1;margin-bottom:22px;}
-  body.view-desktop .hero{grid-column:1;grid-row:2;margin-bottom:0;}
-  body.view-desktop #resetBtn{grid-column:1;grid-row:3;}
-  body.view-desktop .stats{grid-column:1;grid-row:4;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0 0;}
+  body.view-desktop .col-left{display:block;grid-column:1;position:sticky;top:20px;}
+  body.view-desktop .col-right{display:block;grid-column:2;min-width:0;}
+  body.view-desktop .hero{margin-bottom:0;}
+  body.view-desktop .stats{grid-template-columns:1fr 1fr;gap:10px;margin:14px 0 0;}
   body.view-desktop .stat-card{padding:16px 8px;}
   body.view-desktop .stat-card .stat-label{font-size:10px;}
   body.view-desktop .stat-card .stat-value{font-size:18px;}
-  body.view-desktop .tabs{grid-column:2;grid-row:2;margin-bottom:18px;align-self:start;}
+  body.view-desktop .tabs{margin-bottom:18px;}
   body.view-desktop .tab-btn{font-size:13.5px;padding:14px 0;}
-  body.view-desktop .tab-content{grid-column:2;grid-row:3 / span 4;min-width:0;}
   body.view-desktop #lapList{max-height:420px;}
   body.view-desktop #lapChart{height:190px;}
   body.view-desktop .lap-row{font-size:14px;}
@@ -289,6 +290,7 @@
     </div>
   </div>
 
+  <div class="col-left">
   <div class="hero">
     <div class="hero-top">
       <div>
@@ -320,6 +322,9 @@
     <div class="stat-card"><div class="stat-label">Total</div><div class="stat-value" id="totalTime">—</div></div>
   </div>
 
+  </div><!-- /.col-left -->
+
+  <div class="col-right">
   <div class="tabs">
     <button class="tab-btn active" data-tab="tabTimer" id="tabBtnTimer"></button>
     <button class="tab-btn" data-tab="tabPenilaian" id="tabBtnPenilaian"></button>
@@ -410,6 +415,8 @@
       <button id="clearHistoryBtn" class="btn-danger" disabled></button>
     </div>
   </div>
+
+  </div><!-- /.col-right -->
 
   </div><!-- /#screenshot-area -->
 
