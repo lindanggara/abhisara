@@ -1,6 +1,6 @@
 # ABHISARA · Lap Timer Dashboard
 
-Aplikasi **Lap Timer berbasis web** untuk mencatat waktu lap, menghitung penilaian secara otomatis, dan menyimpan riwayat sesi pengujian. Dikembangkan untuk mendukung pengujian performa kapal **ABHISARA** dengan antarmuka responsif dan sistem autentikasi terpusat.
+Aplikasi **Lap Timer berbasis web** untuk mencatat waktu lap, menghitung penilaian secara otomatis, dan mengelola riwayat sesi pengujian. Dikembangkan untuk mendukung pengujian performa kapal **ABHISARA** dengan antarmuka responsif, autentikasi pengguna, dan sinkronisasi riwayat sesi antaranggota.
 
 ![Version](https://img.shields.io/badge/version-1.0-blue)
 ![Status](https://img.shields.io/badge/status-active-success)
@@ -11,22 +11,20 @@ Aplikasi **Lap Timer berbasis web** untuk mencatat waktu lap, menghitung penilai
 
 ## Demo
 
-Aplikasi di-host menggunakan Netlify dan menggunakan Netlify Identity untuk autentikasi pengguna.
+Aplikasi di-host menggunakan Netlify dengan autentikasi melalui Netlify Identity sesuai konfigurasi yang digunakan.
 
 **[Buka ABHISARA Lap Timer](https://abhisara.netlify.app)**
 
-> **Catatan keamanan:** Autentikasi dikelola melalui Netlify Identity. Akses aplikasi memerlukan akun yang telah terdaftar atau diundang oleh administrator, sesuai dengan konfigurasi registrasi yang berlaku.
-
----
+> **Catatan keamanan:** Akses aplikasi memerlukan akun yang telah terdaftar atau diundang oleh administrator sesuai pengaturan autentikasi yang aktif.
 
 ## Fitur Utama
 
 ### 1. Timer dan Pencatatan Lap
 
-- Timer dengan presisi hingga centisecond (0,01 detik).
+- Timer dengan presisi tampilan hingga centisecond (0,01 detik).
 - Kontrol timer: START, PAUSE, dan LANJUT.
 - Tombol LAP untuk mencatat waktu setiap lap.
-- Timer kembali ke nol setelah pencatatan lap untuk pengukuran berikutnya.
+- Timer dapat direset untuk memulai pengukuran berikutnya.
 
 ### 2. Penilaian Otomatis
 
@@ -38,7 +36,7 @@ Sistem menghitung nilai berdasarkan waktu dan jumlah lap yang dicapai.
 | **NKL (Nilai Ketahanan Lap)** | `(KL_aktual / KL_terbanyak) × 100` |
 | **NA (Nilai Akhir)** | `0.5 × NT + 0.5 × NKL` |
 
-Indikator nilai ditampilkan berdasarkan kategori berikut:
+Indikator nilai ditampilkan berdasarkan kategori:
 
 - Hijau: nilai ≥ 80.
 - Kuning: nilai ≥ 60 dan < 80.
@@ -47,46 +45,70 @@ Indikator nilai ditampilkan berdasarkan kategori berikut:
 ### 3. Riwayat Sesi Pengujian
 
 - Penyimpanan sesi ketika pengguna melakukan reset sesi.
-- Penyimpanan hingga 50 sesi terakhir.
+- Penyimpanan riwayat bersama melalui Netlify Blobs.
+- Riwayat dapat diakses oleh anggota yang login sesuai implementasi autentikasi dan hak akses.
+- Informasi pembuat sesi ditampilkan bersama tanggal sesi.
 - Tampilan detail waktu lap untuk setiap sesi.
 - Fitur pemulihan (*restore*) sesi ke timer.
 - Ekspor data untuk setiap sesi maupun seluruh riwayat.
+- Pembatasan jumlah riwayat sesuai implementasi aplikasi.
 
-### 4. Grafik Waktu Lap
+### 4. Sinkronisasi Riwayat Antaranggota
+
+- Riwayat sesi disimpan di server agar dapat diakses lintas perangkat dan akun yang berhak.
+- Data diperbarui saat pengguna login, membuka tab History, atau koneksi internet kembali.
+- Pembaruan berkala dilakukan ketika tab History terbuka.
+- Sesi baru yang dibuat saat offline dapat masuk antrean untuk dikirim ketika koneksi kembali tersedia.
+- Status sinkronisasi ditampilkan pada antarmuka.
+- Riwayat lama yang tersimpan di perangkat dapat ditawarkan untuk diimpor ke penyimpanan bersama.
+
+**Catatan:** Timer yang sedang berjalan tetap bersifat lokal pada perangkat. Sinkronisasi riwayat tidak berarti timer aktif dibagikan secara real-time.
+
+### 5. Pengelolaan dan Penghapusan Sesi
+
+- Pembuat sesi dapat menghapus sesi miliknya sesuai validasi backend.
+- Admin dapat menghapus sesi sesuai hak akses yang diberikan.
+- Fitur Hapus Semua mengikuti aturan hak akses: pengguna biasa hanya menghapus sesi miliknya, sedangkan admin dapat menghapus seluruh riwayat bersama.
+- Hak akses harus divalidasi oleh backend, bukan hanya disembunyikan atau ditampilkan melalui antarmuka.
+
+### 6. Grafik Waktu Lap
 
 - Grafik garis untuk memvisualisasikan waktu setiap lap.
 - Grafik berbasis SVG tanpa memerlukan library grafik tambahan.
 - Penanda khusus untuk lap tercepat.
 
-### 5. Catatan Setiap Lap
+### 7. Catatan Setiap Lap
 
 - Catatan teks untuk setiap lap.
 - Mendukung catatan multi-baris.
-- Penyimpanan otomatis ketika pengguna mengetik.
+- Penyimpanan otomatis ketika pengguna mengetik, sesuai implementasi aplikasi.
 
-### 6. Autentikasi Pengguna
+### 8. Autentikasi Pengguna
 
-- Login menggunakan email dan password melalui Netlify Identity.
-- Pengelolaan akun melalui dashboard Netlify.
-- Mendukung konfigurasi registrasi terbuka atau undangan saja, sesuai pengaturan situs.
+- Login menggunakan email dan password melalui sistem autentikasi yang dikonfigurasi.
+- Pengelolaan akun melalui dashboard penyedia autentikasi.
+- Hak akses admin digunakan untuk mengatur operasi penghapusan riwayat bersama.
+- Pengguna harus terautentikasi untuk mengakses fitur yang memerlukan login.
 
-### 7. Penyimpanan Lokal
+### 9. Penyimpanan Lokal
 
-Data tertentu disimpan secara otomatis di browser menggunakan `localStorage`, meliputi:
+Data tertentu tetap disimpan di browser menggunakan `localStorage`, meliputi:
 
-- Data waktu lap dan catatan.
+- Data waktu lap dan catatan lokal.
 - Setelan karburator Low/High.
-- Riwayat sesi pengujian.
-- Status atau informasi sesi aplikasi yang disimpan oleh implementasi.
+- Riwayat lokal atau cache yang digunakan aplikasi.
+- Antrean data yang menunggu sinkronisasi, sesuai implementasi.
 
-Data lokal dapat tetap tersedia setelah browser ditutup atau halaman dimuat ulang, selama data browser tidak dihapus. Penyimpanan lokal tidak otomatis menyinkronkan data antarperangkat.
+Data lokal dapat tetap tersedia setelah browser ditutup atau halaman dimuat ulang, selama data browser tidak dihapus.
 
-### 8. Ekspor dan Backup Data
+Penyimpanan lokal berbeda dari penyimpanan bersama di server. Data lokal tidak otomatis tersedia di perangkat lain tanpa proses sinkronisasi.
+
+### 10. Ekspor dan Backup Data
 
 - **CSV:** mengekspor data untuk pengolahan lebih lanjut di spreadsheet.
 - **Salin:** menyalin data ke clipboard.
 - **JPG:** menyimpan tangkapan layar dashboard.
-- **Export All History:** mengekspor seluruh riwayat sesi ke dalam satu file CSV.
+- **Export All History:** mengekspor riwayat sesi ke dalam satu file CSV.
 
 ---
 
@@ -94,7 +116,7 @@ Data lokal dapat tetap tersedia setelah browser ditutup atau halaman dimuat ulan
 
 ### 1. Buka Aplikasi
 
-Akses aplikasi melalui browser di komputer atau perangkat seluler.
+Akses aplikasi melalui browser komputer atau perangkat seluler.
 
 https://abhisara.netlify.app
 
@@ -108,7 +130,7 @@ Masukkan email dan password akun yang telah terdaftar atau diundang oleh adminis
 2. Masukkan setelan karburator Low/High jika diperlukan.
 3. Tekan **START** untuk memulai timer.
 4. Tekan **LAP** setiap kali kapal melewati garis finis.
-5. Timer akan kembali ke nol untuk pengukuran lap berikutnya.
+5. Ulangi pengukuran sesuai kebutuhan.
 
 ### 4. Tambahkan Catatan
 
@@ -118,23 +140,32 @@ Gunakan kolom catatan pada setiap lap untuk mencatat kondisi atau informasi yang
 
 Tekan tombol **Reset sesi** untuk menyimpan sesi ke riwayat dan memulai sesi baru.
 
-### 6. Ekspor Data
+Sesi yang tersimpan akan diproses untuk masuk ke riwayat bersama sesuai status koneksi dan implementasi sinkronisasi.
 
-Gunakan fitur ekspor yang tersedia untuk menyimpan data lap, menyalin data ke clipboard, atau mengambil tangkapan layar dashboard.
+### 6. Lihat Riwayat Bersama
+
+Buka tab **History** untuk melihat sesi yang tersedia bagi akun yang login. Pastikan status sinkronisasi menunjukkan bahwa data telah tersinkron sebelum menganggap sesi berhasil tersimpan di server.
+
+### 7. Ekspor Data
+
+Gunakan fitur ekspor untuk menyimpan data lap, menyalin data ke clipboard, atau mengambil tangkapan layar dashboard.
 
 ---
 
 ## Manajemen Pengguna
 
-Pengelolaan pengguna dilakukan melalui Netlify Identity.
+Pengelolaan pengguna dilakukan melalui layanan autentikasi yang terhubung dengan aplikasi.
 
-1. Buka [Netlify Dashboard](https://app.netlify.com).
-2. Pilih situs atau proyek `abhisara`.
-3. Buka menu Identity jika tersedia pada konfigurasi situs.
-4. Kelola akun melalui bagian pengguna (*Users*).
-5. Gunakan fitur undangan pengguna atau pengaturan registrasi sesuai kebutuhan.
+Untuk instalasi yang menggunakan Netlify Identity:
 
-**Catatan:** Nama menu dan ketersediaan fitur dapat berbeda bergantung pada konfigurasi situs dan layanan autentikasi yang digunakan. Pastikan konfigurasi autentikasi yang aktif sesuai dengan implementasi aplikasi.
+1. Buka [Netlify Dashboard](https://app.netlify.com/).
+2. Pilih situs `abhisara`.
+3. Buka menu Identity jika tersedia.
+4. Kelola pengguna melalui bagian Users.
+5. Atur registrasi atau undangan sesuai kebutuhan.
+6. Berikan role `admin` kepada pengguna yang berwenang jika fitur tersebut telah dikonfigurasi dan divalidasi oleh backend.
+
+**Penting:** Pemberian role admin harus disertai validasi identitas dan hak akses pada endpoint backend. Konfigurasi autentikasi dan role harus sesuai dengan layanan yang benar-benar aktif pada situs.
 
 ---
 
@@ -142,12 +173,24 @@ Pengelolaan pengguna dilakukan melalui Netlify Identity.
 
 ```text
 abhisara/
-├── index.html       # Aplikasi utama: HTML, CSS, dan JavaScript
-├── logo-ferc.png    # Logo FERC
-└── README.md        # Dokumentasi proyek
+├── index.html
+├── logo-ferc.png
+├── netlify.toml
+├── package.json
+├── README.md
+└── netlify/
+    └── functions/
+        └── sessions.mjs
 ```
 
-Struktur di atas menggambarkan berkas utama yang digunakan dalam dokumentasi ini. Jika proyek memiliki berkas atau konfigurasi tambahan, sesuaikan struktur tersebut dengan kondisi repositori sebenarnya.
+| File atau Folder | Fungsi |
+|---|---|
+| `index.html` | Aplikasi utama, termasuk HTML, CSS, dan JavaScript frontend |
+| `logo-ferc.png` | Logo FERC |
+| `netlify.toml` | Konfigurasi build dan deployment Netlify |
+| `package.json` | Metadata proyek dan dependensi yang diperlukan |
+| `netlify/functions/sessions.mjs` | Backend serverless untuk menangani operasi riwayat sesi |
+| `README.md` | Dokumentasi proyek |
 
 ---
 
@@ -156,21 +199,41 @@ Struktur di atas menggambarkan berkas utama yang digunakan dalam dokumentasi ini
 | Teknologi | Kegunaan |
 |---|---|
 | HTML5 | Struktur aplikasi |
-| CSS3 | Tampilan, responsivitas, dan tema |
-| JavaScript (Vanilla) | Logika timer, penilaian, dan riwayat |
-| Local Storage | Penyimpanan data lokal pada browser |
-| SVG | Grafik waktu lap dan elemen visual |
-| Netlify Identity | Autentikasi pengguna |
+| CSS3 | Tampilan dan responsivitas |
+| JavaScript (Vanilla) | Logika timer, penilaian, dan interaksi |
+| Local Storage | Penyimpanan lokal dan cache browser |
+| SVG | Visualisasi grafik waktu lap |
+| Netlify Identity | Autentikasi pengguna, jika aktif pada deployment |
+| Netlify Functions | Backend serverless untuk pengelolaan riwayat |
+| Netlify Blobs | Penyimpanan riwayat sesi bersama |
+| Netlify | Hosting dan deployment aplikasi |
 | html2canvas | Pembuatan tangkapan layar, jika digunakan |
-| Netlify | Hosting aplikasi web |
+
+---
+
+## Deployment
+
+Proyek menggunakan Netlify untuk hosting frontend dan menjalankan backend serverless.
+
+Langkah deployment:
+
+1. Simpan seluruh file sesuai struktur proyek.
+2. Pastikan `package.json` mencantumkan dependensi yang diperlukan, termasuk `@netlify/blobs`.
+3. Pastikan `netlify.toml` memiliki konfigurasi yang sesuai.
+4. Push perubahan ke repository GitHub.
+5. Hubungkan repository tersebut dengan situs Netlify.
+6. Jalankan deployment melalui integrasi Git agar Netlify dapat membangun frontend dan fungsi backend.
+7. Uji autentikasi, penyimpanan sesi, sinkronisasi lintas akun, dan hak akses setelah deployment.
+
+**Catatan:** Deployment menggunakan drag-and-drop folder statis tidak menjalankan proses build fungsi serverless seperti deployment yang terhubung dengan repository.
 
 ---
 
 ## Kompatibilitas
 
-Aplikasi ditujukan untuk browser modern yang mendukung `localStorage` dan `requestAnimationFrame`.
+Aplikasi ditujukan untuk browser modern yang mendukung `localStorage`, `requestAnimationFrame`, dan fitur JavaScript yang digunakan aplikasi.
 
-| Browser | Target dukungan |
+| Browser | Target Dukungan |
 |---|---|
 | Google Chrome | Desktop dan Android |
 | Safari | macOS dan iOS |

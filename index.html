@@ -679,6 +679,7 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
     this.classList.add('active');
     document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
     document.getElementById(tabId).classList.add('active');
+    if (tabId === 'tabHistory' && appStarted) refreshHistory();
   });
 });
 function goToTimerTab() {
@@ -799,7 +800,7 @@ function loadData() {
     totalElapsedBeforePause = data.totalElapsedBeforePause || 0;
     pauseElapsed = data.pauseElapsed || 0;
 
-    if (running && startTime > 0) {
+    if (running && startTime > 1e12) {   // 1e12 = cap waktu Date.now(); nilai kecil = data versi lama
       startBtn.innerHTML = icon('pause') + ' <span class="btn-label">PAUSE</span>';
       startBtn.className = 'running';
       lapBtn.disabled = false;
@@ -817,16 +818,107 @@ function loadData() {
 }
 
 /* ===================== HISTORY ===================== */
-function loadHistory() {
-  try {
-    const saved = localStorage.getItem('lapTimerHistory');
-    if (saved) { history = JSON.parse(saved); renderHistory(); }
-  } catch (e) { /* ignore */ }
+/* ===================== HISTORY BERSAMA (CLOUD) =====================
+   Sesi tersimpan di server (Netlify Blobs lewat /.netlify/functions/sessions)
+   sehingga semua anggota melihat data yang sama. localStorage hanya cache
+   offline + antrean sesi yang belum sempat terkirim.
+   =================================================================== */
+const LS_HISTORY = 'lapTimerHistory';
+const LS_PENDING = 'lapTimerPending';
+const LS_LEGACY = 'lapTimerLegacy';
+let cloudMe = { email: '', isAdmin: false };
+let cloudStatus = 'memuat...';
+let refreshing = false;
+
+function cloudLabel() { return cloudStatus; }
+function currentEmail() {
+  const u = window.netlifyIdentity && netlifyIdentity.currentUser();
+  return (u && u.email) || cloudMe.email || '';
 }
-function saveHistory() {
-  try { localStorage.setItem('lapTimerHistory', JSON.stringify(history)); } catch (e) { /* ignore */ }
+function canDelete(s) { return cloudMe.isAdmin || !s.by || s.by === currentEmail(); }
+
+async function api(method, query, body) {
+  const u = window.netlifyIdentity && netlifyIdentity.currentUser();
+  if (!u) throw new Error('belum login');
+  const token = await u.jwt();
+  const res = await fetch('/.netlify/functions/sessions' + (query || ''), {
+    method,
+    headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+    body: body ? JSON.stringify(body) : undefined
+  });
+  if (!res.ok) { const err = new Error('HTTP ' + res.status); err.status = res.status; throw err; }
+  return res.json();
+}
+function readPending() { try { return JSON.parse(localStorage.getItem(LS_PENDING) || '[]'); } catch (e) { return []; } }
+function writePending(list) { try { localStorage.setItem(LS_PENDING, JSON.stringify(list)); } catch (e) { /* ignore */ } }
+function cacheHistory() { try { localStorage.setItem(LS_HISTORY, JSON.stringify(history)); } catch (e) { /* ignore */ } }
+function stripUi(sess) { const c = JSON.parse(JSON.stringify(sess)); delete c._expanded; return c; }
+
+async function flushPending() {
+  const pending = readPending();
+  if (!pending.length) return;
+  const left = [];
+  for (const sess of pending) {
+    try { await api('POST', '', stripUi(sess)); } catch (e) { left.push(sess); }
+  }
+  writePending(left);
+}
+
+// Sesi lama yang hanya ada di perangkat ini (sebelum fitur cloud) -> tawarkan unggah sekali
+async function migrateLegacy(serverIds) {
+  if (localStorage.getItem('lapTimerLegacyAsked')) return false;
+  const legacy = history.filter(x => !x.by && !serverIds.has(x.id));
+  if (!legacy.length) return false;
+  localStorage.setItem('lapTimerLegacyAsked', '1');
+  localStorage.setItem(LS_LEGACY, JSON.stringify(legacy));   // cadangan lokal
+  if (!confirm(`Ada ${legacy.length} sesi lama di perangkat ini.\nUnggah ke data bersama supaya bisa dilihat semua anggota?`)) return false;
+  const pending = readPending();
+  for (const sess of legacy) {
+    try { await api('POST', '', stripUi(sess)); } catch (e) { pending.push(sess); }
+  }
+  writePending(pending);
+  return true;
+}
+
+async function refreshHistory() {
+  if (refreshing) return;
+  refreshing = true;
+  cloudStatus = 'memuat...';
   renderHistory();
+  try {
+    await flushPending();
+    let data = await api('GET');
+    cloudMe = data.me || cloudMe;
+    const serverIds = new Set(data.sessions.map(x => x.id));
+    if (await migrateLegacy(serverIds)) { await flushPending(); data = await api('GET'); }
+
+    const expanded = new Map(history.map(x => [x.id, x._expanded]));
+    const ids = new Set(data.sessions.map(x => x.id));
+    const pending = readPending().filter(x => !ids.has(x.id));
+    history = [...pending, ...data.sessions]
+      .map(x => Object.assign({}, x, { _expanded: !!expanded.get(x.id) }))
+      .sort((p, q) => q.id - p.id);
+    cloudStatus = pending.length ? `${pending.length} menunggu sinkron` : 'tersinkron';
+  } catch (e) {
+    console.warn('Sinkron history gagal:', e);
+    cloudStatus = 'offline (cache)';
+  } finally {
+    refreshing = false;
+    cacheHistory();
+    renderHistory();
+  }
 }
+
+function loadHistory() {
+  try {                       // tampilkan cache dulu agar langsung ada isi
+    const saved = localStorage.getItem(LS_HISTORY);
+    if (saved && !history.length) history = JSON.parse(saved);
+  } catch (e) { /* ignore */ }
+  renderHistory();
+  return refreshHistory();
+}
+function saveHistory() { cacheHistory(); renderHistory(); }   // cache lokal + render ulang
+
 function saveCurrentSession() {
   if (!laps.length) return;
   const durations = laps.map(x => x.duration);
@@ -834,7 +926,7 @@ function saveCurrentSession() {
   const best = Math.min(...durations);
   const total = durations.reduce((a, b) => a + b, 0);
 
-  history.unshift({
+  const sess = {
     id: Date.now(),
     date: dateDisplay.textContent,
     sessionName: sessionInput.value || 'Tanpa Nama',
@@ -843,15 +935,39 @@ function saveCurrentSession() {
     high: highInput.value || '-',
     notes: settingNotes.value || '-',
     summary: { totalLaps: laps.length, avg: format(avg), best: format(best), total: format(total) },
+    by: currentEmail(),
     _expanded: false
-  });
-  if (history.length > 50) history.pop();
+  };
+  history.unshift(sess);       // tampil langsung, kirim ke server di belakang layar
   saveHistory();
+  api('POST', '', stripUi(sess)).then(() => refreshHistory()).catch(e => {
+    console.warn('Gagal kirim sesi, masuk antrean:', e);
+    const pending = readPending(); pending.push(sess); writePending(pending);
+    cloudStatus = 'menunggu sinkron';
+    renderHistory();
+  });
+}
+
+async function deleteSessionCloud(id) {
+  try { await api('DELETE', '?id=' + id); }
+  catch (e) {
+    alert(e.status === 403 ? 'Hanya pembuat sesi atau admin yang bisa menghapus sesi ini.' : 'Gagal menghapus (offline?). Coba lagi.');
+    return;
+  }
+  history = history.filter(x => x.id !== id);
+  writePending(readPending().filter(x => x.id !== id));
+  saveHistory();
+}
+async function clearHistoryCloud() {
+  try { await api('DELETE', '?all=1'); }
+  catch (e) { alert('Gagal menghapus (offline?). Coba lagi.'); return; }
+  writePending([]);
+  await refreshHistory();
 }
 
 function renderHistory() {
   const count = history.length;
-  historyCount.textContent = `${count} sesi`;
+  historyCount.textContent = `${count} sesi · ${cloudLabel()}`;
 
   if (!count) {
     historyList.innerHTML = `<div class="empty">${icon('box', 26)}Belum ada sesi tersimpan</div>`;
@@ -878,7 +994,7 @@ function renderHistory() {
         <div class="history-header">
           <div>
             <div class="history-title">${icon('flag', 13)} ${escapeHtml(s.sessionName)}</div>
-            <div class="history-date">${icon('calendar', 11)} ${s.date} &middot; ${icon('tag', 11)} ${s.laps.length} lap</div>
+            <div class="history-date">${icon('calendar', 11)} ${s.date} &middot; ${icon('tag', 11)} ${s.laps.length} lap &middot; ${escapeHtml((s.by || 'lokal').split('@')[0])}</div>
           </div>
           <div class="history-right">
             <div class="history-total">${s.summary.total}</div>
@@ -894,7 +1010,7 @@ function renderHistory() {
           <button class="mini-btn toggle-detail" data-id="${s.id}">${icon(isExpanded ? 'chevronUp' : 'chevronDown', 11)} ${isExpanded ? 'Sembunyikan' : 'Lihat Detail'}</button>
           <button class="mini-btn primary export-session" data-id="${s.id}">${icon('fileExport', 11)} Export CSV</button>
           <button class="mini-btn gold restore-session" data-id="${s.id}">${icon('rotate', 11)} Restore</button>
-          <button class="mini-btn danger-icon delete-session" data-id="${s.id}">${icon('close', 14)}</button>
+          ${canDelete(s) ? `<button class="mini-btn danger-icon delete-session" data-id="${s.id}">${icon('close', 14)}</button>` : ''}
         </div>
         <div class="history-detail" style="display:${isExpanded ? 'block' : 'none'};">
           <div class="history-detail-header"><span>#</span><span>Waktu</span><span>Total</span><span>Catatan</span></div>
@@ -925,7 +1041,7 @@ function renderHistory() {
   document.querySelectorAll('.delete-session').forEach(btn => btn.addEventListener('click', e => {
     e.stopPropagation();
     const id = parseInt(btn.dataset.id);
-    if (confirm('Hapus sesi ini?')) { history = history.filter(x => x.id !== id); saveHistory(); }
+    if (confirm('Hapus sesi ini dari data bersama?')) deleteSessionCloud(id);
   }));
   document.querySelectorAll('.history-header').forEach(h => h.addEventListener('click', function () {
     const btn = this.closest('.history-item').querySelector('.toggle-detail');
@@ -1146,14 +1262,14 @@ function updateSettingSummary() {
 /* ===================== TIMER LOOP ===================== */
 function updateTimer() {
   if (!running) return;
-  timerEl.innerHTML = format(performance.now() - lapStart);
+  timerEl.innerHTML = format(Date.now() - lapStart);
   animationId = requestAnimationFrame(updateTimer);
 }
 
 /* ===================== START / PAUSE ===================== */
 startBtn.addEventListener('click', () => {
   if (!running) {
-    const now = performance.now();
+    const now = Date.now();
     if (startTime === 0) { startTime = now; lapStart = now; }
     else { startTime = now - totalElapsedBeforePause; lapStart = now - pauseElapsed; }
     running = true;
@@ -1164,7 +1280,7 @@ startBtn.addEventListener('click', () => {
     animationId = requestAnimationFrame(updateTimer);
     saveData();
   } else {
-    const now = performance.now();
+    const now = Date.now();
     totalElapsedBeforePause = now - startTime;
     pauseElapsed = now - lapStart;
     running = false;
@@ -1180,7 +1296,7 @@ startBtn.addEventListener('click', () => {
 /* ===================== LAP ===================== */
 lapBtn.addEventListener('click', () => {
   if (!running) return;
-  const now = performance.now();
+  const now = Date.now();
   const duration = now - lapStart;
   const total = now - startTime;
   laps.push({ number: laps.length + 1, duration, total, note: '' });
@@ -1247,7 +1363,7 @@ exportHistoryBtn.addEventListener('click', () => {
 
 clearHistoryBtn.addEventListener('click', () => {
   if (!history.length) return;
-  if (confirm('Hapus semua history? Data tidak bisa dikembalikan.')) { history = []; saveHistory(); }
+  if (confirm(cloudMe.isAdmin ? 'Hapus SEMUA history bersama (milik semua anggota)? Tidak bisa dikembalikan.' : 'Hapus semua sesi milikmu? Sesi anggota lain tidak ikut terhapus.')) clearHistoryCloud();
 });
 
 /* ===================== SCREENSHOT ===================== */
@@ -1325,6 +1441,12 @@ document.addEventListener('keydown', (e) => {
   else if (mq.addListener) mq.addListener(applyView);
   applyView();
 })();
+/* refresh otomatis: saat internet kembali & tiap 30 detik jika tab History terbuka */
+window.addEventListener('online', () => { if (appStarted) refreshHistory(); });
+setInterval(() => {
+  if (appStarted && !document.hidden && document.getElementById('tabHistory').classList.contains('active')) refreshHistory();
+}, 30000);
+
 /* =====================================================================
    START IDENTITY — HARUS PALING BAWAH
    Event 'init' bisa langsung terpanggil (jika user sudah login) dan
