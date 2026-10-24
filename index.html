@@ -11,24 +11,10 @@
 
 <style>
   :root{
-    --bg:#eef1fb;
-    --surface:#ffffff;
-    --surface-soft:#f6f7fd;
-    --ink:#12142b;
-    --ink-dim:#6b7099;
-    --line:#e6e8f5;
-    --primary-1:#4f46e5;
-    --primary-2:#6d5bf0;
-    --primary-glow:rgba(79,70,229,0.28);
-    --gold:#f5a524;
-    --gold-soft:#fff3dd;
-    --green:#12b76a;
-    --red:#ef4444;
-    --red-soft:#feeceb;
-    --radius-xl:28px;
-    --radius-lg:20px;
-    --radius-md:14px;
-    --radius-sm:10px;
+    --bg:#eef1fb;--surface:#ffffff;--surface-soft:#f6f7fd;--ink:#12142b;--ink-dim:#6b7099;--line:#e6e8f5;
+    --primary-1:#4f46e5;--primary-2:#6d5bf0;--primary-glow:rgba(79,70,229,0.28);
+    --gold:#f5a524;--gold-soft:#fff3dd;--green:#12b76a;--red:#ef4444;--red-soft:#feeceb;
+    --radius-xl:28px;--radius-lg:20px;--radius-md:14px;--radius-sm:10px;
     --font-display:-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;
     --font-body:-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;
     --font-mono:'SF Mono','Cascadia Code','Consolas','Roboto Mono',monospace;
@@ -40,130 +26,50 @@
 
   body{
     font-family:var(--font-body);
-    background:
-      radial-gradient(1100px 500px at 85% -10%, #e3e6fb 0%, transparent 60%),
-      radial-gradient(900px 500px at -10% 10%, #eef4ff 0%, transparent 55%),
-      var(--bg);
-    color:var(--ink);
-    min-height:100vh;
-    padding:20px 16px 40px;
-    display:flex;
-    justify-content:center;
+    background:radial-gradient(1100px 500px at 85% -10%, #e3e6fb 0%, transparent 60%),radial-gradient(900px 500px at -10% 10%, #eef4ff 0%, transparent 55%),var(--bg);
+    color:var(--ink);min-height:100vh;padding:20px 16px 40px;display:flex;justify-content:center;
   }
-  .app{max-width:460px;width:100%; display:none;} /* Sembunyikan awal sampai login */
+  .app{max-width:460px;width:100%;display:none;}
 
-  /* ===== FORM LOGIN KUSTOM ===== */
-  #loginScreen {
-    position: fixed;
-    inset: 0;
-    background: var(--bg);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-    z-index: 9999;
-  }
-  #loginScreen.hidden { display: none; }
-  .login-card {
-    background: var(--surface);
-    border-radius: var(--radius-xl);
-    padding: 32px 24px;
-    width: 100%;
-    max-width: 380px;
-    box-shadow: 0 20px 60px rgba(79,70,229,0.15);
-    border: 1px solid var(--line);
-  }
-  .login-brand {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 12px;
-    margin-bottom: 24px;
-  }
-  .login-brand-mark {
-    width: 56px; height: 56px;
-    border-radius: 14px;
-    background: #fff;
-    display: flex; align-items: center; justify-content: center;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-    overflow: hidden;
-    padding: 6px;
-    border: 1px solid var(--line);
-    flex-shrink: 0;
-  }
-  .login-brand-mark img { width: 100%; height: 100%; object-fit: contain; display: block; }
-  .login-brand-text h1 { font-family: var(--font-display); font-size: 18px; font-weight: 700; }
-  .login-brand-text .sub { font-size: 11px; color: var(--ink-dim); text-transform: uppercase; letter-spacing: 0.4px; }
-  
-  .login-field { margin-bottom: 14px; }
-  .login-field label {
-    display: block; font-size: 11px; font-weight: 700; text-transform: uppercase;
-    letter-spacing: 0.5px; color: var(--ink-dim); margin-bottom: 6px;
-  }
-  .login-field input {
-    width: 100%; background: var(--surface-soft); border: 1px solid var(--line);
-    border-radius: var(--radius-sm); padding: 12px 14px; font-size: 14px;
-    font-family: var(--font-body); color: var(--ink); transition: 0.2s;
-  }
-  .login-field input:focus { outline: none; border-color: var(--primary-1); background: #fff; }
-  
-  .login-btn {
-    width: 100%; min-height: 50px; background: linear-gradient(135deg, var(--primary-1), var(--primary-2));
-    color: #fff; border: 0; border-radius: var(--radius-md); font-family: var(--font-body);
-    font-weight: 700; font-size: 15px; cursor: pointer; margin-top: 6px; transition: 0.2s;
-  }
-  .login-btn:active { opacity: 0.85; transform: scale(0.98); }
-  .login-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-  
-  .login-error {
-    color: var(--red); background: var(--red-soft); border-radius: 8px;
-    padding: 10px 12px; font-size: 12.5px; margin-bottom: 12px;
-    display: none; font-weight: 600;
-  }
-  .login-error.show { display: block; }
-  .login-hint { font-size: 10.5px; color: var(--ink-dim); text-align: center; margin-top: 16px; line-height: 1.5; }
+  /* ===== LOGIN ===== */
+  #loginScreen{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:20px;z-index:9999;}
+  #loginScreen.hidden{display:none;}
+  .login-card{background:var(--surface);border-radius:var(--radius-xl);padding:32px 24px;width:100%;max-width:380px;box-shadow:0 20px 60px rgba(79,70,229,0.15);border:1px solid var(--line);}
+  .login-brand{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:24px;}
+  .login-brand-mark{width:56px;height:56px;border-radius:14px;background:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 20px rgba(0,0,0,0.1);overflow:hidden;padding:6px;border:1px solid var(--line);flex-shrink:0;}
+  .login-brand-mark img{width:100%;height:100%;object-fit:contain;display:block;}
+  .login-brand-text h1{font-family:var(--font-display);font-size:18px;font-weight:700;}
+  .login-brand-text .sub{font-size:11px;color:var(--ink-dim);text-transform:uppercase;letter-spacing:0.4px;}
+  .login-field{margin-bottom:14px;}
+  .login-field label{display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--ink-dim);margin-bottom:6px;}
+  .login-field input{width:100%;background:var(--surface-soft);border:1px solid var(--line);border-radius:var(--radius-sm);padding:12px 14px;font-size:14px;font-family:var(--font-body);color:var(--ink);transition:0.2s;}
+  .login-field input:focus{outline:none;border-color:var(--primary-1);background:#fff;}
+  .login-btn{width:100%;min-height:50px;background:linear-gradient(135deg,var(--primary-1),var(--primary-2));color:#fff;border:0;border-radius:var(--radius-md);font-family:var(--font-body);font-weight:700;font-size:15px;cursor:pointer;margin-top:6px;transition:0.2s;}
+  .login-btn:active{opacity:0.85;transform:scale(0.98);}
+  .login-btn:disabled{opacity:0.5;cursor:not-allowed;}
+  .login-error{color:var(--red);background:var(--red-soft);border-radius:8px;padding:10px 12px;font-size:12.5px;margin-bottom:12px;display:none;font-weight:600;}
+  .login-error.show{display:block;}
+  .login-hint{font-size:10.5px;color:var(--ink-dim);text-align:center;margin-top:16px;line-height:1.5;}
 
   /* ===== HEADER ===== */
   .topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;gap:10px;flex-wrap:wrap;}
   .brand{display:flex;align-items:center;gap:10px;}
-  .brand-mark{
-    width:42px;height:42px;border-radius:10px;flex-shrink:0;
-    background:#fff; display:flex;align-items:center;justify-content:center;
-    box-shadow:0 4px 12px rgba(0,0,0,0.08); overflow:hidden; padding:4px; border:1px solid var(--line);
-  }
+  .brand-mark{width:42px;height:42px;border-radius:10px;flex-shrink:0;background:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(0,0,0,0.08);overflow:hidden;padding:4px;border:1px solid var(--line);}
   .brand-mark img{width:100%;height:100%;object-fit:contain;display:block;}
   .brand-text h1{font-family:var(--font-display);font-size:16px;font-weight:700;letter-spacing:-0.2px;}
   .brand-text .sub{font-size:11px;color:var(--ink-dim);font-weight:500;letter-spacing:0.4px;text-transform:uppercase;}
-  
-  .topbar-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
-  .logout-btn {
-    background: var(--surface); border: 1px solid var(--line); border-radius: 999px;
-    padding: 6px 10px; font-size: 13px; cursor: pointer; color: var(--ink-dim);
-    display: flex; align-items: center; gap: 4px; transition: 0.2s; flex-shrink: 0;
-  }
-  .logout-btn:hover { border-color: var(--red); color: var(--red); background: var(--red-soft); }
-  .logout-btn .icon-svg { width: 14px; height: 14px; }
-
-  .date-badge{
-    background:var(--surface);border:1px solid var(--line);padding:8px 14px;border-radius:999px;
-    font-size:11px;font-weight:700;color:var(--ink-dim);font-family:var(--font-mono);white-space:nowrap;flex-shrink:0;
-  }
+  .topbar-right{display:flex;align-items:center;gap:8px;flex-shrink:0;}
+  .logout-btn{background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:6px 10px;font-size:13px;cursor:pointer;color:var(--ink-dim);display:flex;align-items:center;gap:4px;transition:0.2s;flex-shrink:0;}
+  .logout-btn:hover{border-color:var(--red);color:var(--red);background:var(--red-soft);}
+  .logout-btn .icon-svg{width:14px;height:14px;}
+  .date-badge{background:var(--surface);border:1px solid var(--line);padding:8px 14px;border-radius:999px;font-size:11px;font-weight:700;color:var(--ink-dim);font-family:var(--font-mono);white-space:nowrap;flex-shrink:0;}
 
   /* ===== HERO ===== */
-  .hero{
-    position:relative;
-    background:linear-gradient(150deg,var(--primary-1) 0%,var(--primary-2) 55%,#7c6cf5 100%);
-    border-radius:var(--radius-xl);padding:22px 22px 20px;color:#fff;overflow:hidden;
-    box-shadow:0 20px 40px -12px var(--primary-glow);margin-bottom:14px;
-  }
-  .hero::before{content:'';position:absolute;width:260px;height:260px;top:-120px;right:-90px;
-    background:radial-gradient(circle, rgba(255,255,255,0.18), transparent 65%);}
+  .hero{position:relative;background:linear-gradient(150deg,var(--primary-1) 0%,var(--primary-2) 55%,#7c6cf5 100%);border-radius:var(--radius-xl);padding:22px 22px 20px;color:#fff;overflow:hidden;box-shadow:0 20px 40px -12px var(--primary-glow);margin-bottom:14px;}
+  .hero::before{content:'';position:absolute;width:260px;height:260px;top:-120px;right:-90px;background:radial-gradient(circle, rgba(255,255,255,0.18), transparent 65%);}
   .hero-top{display:flex;justify-content:space-between;align-items:flex-start;position:relative;z-index:1;gap:10px;}
   .hero-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:rgba(255,255,255,0.75);margin-bottom:6px;display:flex;align-items:center;gap:5px;}
-  .session-input{
-    background:rgba(255,255,255,0.14);border:1px solid rgba(255,255,255,0.22);border-radius:var(--radius-sm);
-    padding:9px 12px;font-size:13px;font-weight:600;color:#fff;width:118px;text-align:right;font-family:var(--font-body);flex-shrink:0;
-  }
+  .session-input{background:rgba(255,255,255,0.14);border:1px solid rgba(255,255,255,0.22);border-radius:var(--radius-sm);padding:9px 12px;font-size:13px;font-weight:600;color:#fff;width:118px;text-align:right;font-family:var(--font-body);flex-shrink:0;}
   .session-input::placeholder{color:rgba(255,255,255,0.55);}
   .session-input:focus{outline:none;border-color:rgba(255,255,255,0.5);}
   .hero-timer{text-align:center;margin:18px 0 8px;position:relative;z-index:1;}
@@ -175,22 +81,13 @@
   .dot.paused{background:var(--gold);box-shadow:0 0 10px var(--gold);}
   .dot.idle{background:rgba(255,255,255,0.4);}
   .hero-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px;position:relative;z-index:1;}
-  .hero-actions button{
-    min-height:52px;border:0;border-radius:var(--radius-md);font-family:var(--font-body);font-weight:700;font-size:15px;
-    cursor:pointer;transition:transform .15s ease,opacity .2s ease;touch-action:manipulation;
-    display:flex;align-items:center;justify-content:center;gap:8px;
-  }
+  .hero-actions button{min-height:52px;border:0;border-radius:var(--radius-md);font-family:var(--font-body);font-weight:700;font-size:15px;cursor:pointer;transition:transform .15s ease,opacity .2s ease;touch-action:manipulation;display:flex;align-items:center;justify-content:center;gap:8px;}
   .hero-actions button:active{transform:scale(0.96);}
   .hero-actions button:disabled{opacity:.35;pointer-events:none;}
   #startBtn{background:#fff;color:var(--primary-1);}
   #startBtn.running{background:#ffe4e1;color:#c0281a;}
   #lapBtn{background:rgba(255,255,255,0.16);color:#fff;border:1px solid rgba(255,255,255,0.3);}
-
-  #resetBtn{
-    width:100%;margin-top:10px;min-height:40px;background:transparent;border:1px dashed var(--line);color:var(--ink-dim);
-    border-radius:var(--radius-sm);font-family:var(--font-body);font-weight:600;font-size:12.5px;cursor:pointer;
-    display:flex;align-items:center;justify-content:center;gap:7px;
-  }
+  #resetBtn{width:100%;margin-top:10px;min-height:40px;background:transparent;border:1px dashed var(--line);color:var(--ink-dim);border-radius:var(--radius-sm);font-family:var(--font-body);font-weight:600;font-size:12.5px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;}
   #resetBtn:active{background:var(--surface-soft);}
 
   /* ===== STATS ===== */
@@ -202,11 +99,7 @@
 
   /* ===== TABS ===== */
   .tabs{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:16px;}
-  .tab-btn{
-    padding:11px 0;border:2px solid var(--line);border-radius:var(--radius-md);background:var(--surface);
-    font-family:var(--font-body);font-weight:700;font-size:12.5px;color:var(--ink-dim);cursor:pointer;
-    transition:all .2s;display:flex;align-items:center;justify-content:center;gap:6px;
-  }
+  .tab-btn{padding:11px 0;border:2px solid var(--line);border-radius:var(--radius-md);background:var(--surface);font-family:var(--font-body);font-weight:700;font-size:12.5px;color:var(--ink-dim);cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:6px;}
   .tab-btn.active{border-color:var(--primary-1);background:var(--primary-1);color:#fff;box-shadow:0 4px 12px var(--primary-glow);}
   .tab-btn:active{transform:scale(0.97);}
   .tab-content{display:none;}
@@ -220,27 +113,14 @@
   .section-title .count.filled{color:var(--primary-1);font-weight:700;}
 
   /* ===== CARDS ===== */
-  .settings-card,.notes-card,.chart-card,.penilaian-card,.formula-card{
-    background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-lg);padding:16px;margin-bottom:18px;
-  }
+  .settings-card,.notes-card,.chart-card,.penilaian-card,.formula-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-lg);padding:16px;margin-bottom:18px;}
   .settings-grid,.penilaian-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
-  .setting-field label,.penilaian-field label{
-    display:block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--ink-dim);margin-bottom:5px;
-    display:flex;align-items:center;gap:4px;
-  }
-  .setting-field input,.penilaian-field input{
-    width:100%;background:var(--surface-soft);border:1px solid var(--line);border-radius:var(--radius-sm);
-    padding:10px 12px;font-size:13.5px;font-weight:700;font-family:var(--font-mono);color:var(--ink);
-  }
+  .setting-field label,.penilaian-field label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--ink-dim);margin-bottom:5px;display:flex;align-items:center;gap:4px;}
+  .setting-field input,.penilaian-field input{width:100%;background:var(--surface-soft);border:1px solid var(--line);border-radius:var(--radius-sm);padding:10px 12px;font-size:13.5px;font-weight:700;font-family:var(--font-mono);color:var(--ink);}
   .setting-field input:focus,.penilaian-field input:focus{outline:none;border-color:var(--primary-2);background:#fff;}
-
-  #settingNotes{
-    width:100%;background:var(--surface-soft);border:1px solid var(--line);border-radius:var(--radius-sm);
-    padding:10px 12px;font-size:12.5px;font-family:var(--font-body);color:var(--ink);resize:vertical;min-height:44px;
-  }
+  #settingNotes{width:100%;background:var(--surface-soft);border:1px solid var(--line);border-radius:var(--radius-sm);padding:10px 12px;font-size:12.5px;font-family:var(--font-body);color:var(--ink);resize:vertical;min-height:44px;}
   #settingNotes:focus{outline:none;border-color:var(--primary-2);background:#fff;}
   #settingNotes::placeholder{color:#b7bce0;}
-
   #lapChart{width:100%;height:130px;display:block;overflow:visible;}
 
   .penilaian-hasil{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding-top:12px;margin-top:12px;border-top:1px solid var(--line);}
@@ -253,7 +133,6 @@
   .nilai-item.primary{background:var(--primary-1);}
   .nilai-item.primary .nilai-label{color:rgba(255,255,255,0.7);}
   .nilai-item.primary .nilai-value{color:#fff;}
-
   .formula-card{font-size:12px;color:var(--ink-dim);}
   .formula-card .formula-title{font-weight:700;color:var(--ink);margin-bottom:8px;display:flex;align-items:center;gap:6px;}
   .formula-card .formula-list{display:grid;gap:5px;}
@@ -261,31 +140,21 @@
 
   /* ===== LAPS LIST ===== */
   .laps-wrapper{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-lg);overflow:hidden;}
-  .laps-header{
-    display:grid;grid-template-columns:32px 1fr 1fr 1.2fr;gap:6px;padding:11px 14px;background:var(--surface-soft);
-    color:var(--ink-dim);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;border-bottom:1px solid var(--line);
-  }
+  .laps-header{display:grid;grid-template-columns:32px 1fr 1fr 1.2fr;gap:6px;padding:11px 14px;background:var(--surface-soft);color:var(--ink-dim);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;border-bottom:1px solid var(--line);}
   #lapList{max-height:280px;overflow-y:auto;}
   #lapList::-webkit-scrollbar{width:3px;}
   #lapList::-webkit-scrollbar-thumb{background:var(--line);border-radius:10px;}
-  .lap-row{
-    display:grid;grid-template-columns:32px 1fr 1fr 1.2fr;gap:6px;padding:11px 14px;align-items:start;
-    border-bottom:1px solid var(--surface-soft);font-size:13px;
-  }
+  .lap-row{display:grid;grid-template-columns:32px 1fr 1fr 1.2fr;gap:6px;padding:11px 14px;align-items:start;border-bottom:1px solid var(--surface-soft);font-size:13px;}
   .lap-row:last-child{border-bottom:0;}
   .lap-row .lap-number{color:var(--ink-dim);font-weight:700;font-size:12px;padding-top:4px;display:flex;align-items:center;gap:2px;}
   .lap-row .lap-time{font-family:var(--font-mono);font-weight:700;color:var(--ink);padding-top:4px;}
   .lap-row .lap-total{color:var(--ink-dim);font-size:11.5px;font-family:var(--font-mono);padding-top:4px;}
-  .lap-row .lap-note-input{
-    width:100%;background:var(--surface-soft);border:1px solid var(--line);border-radius:8px;padding:6px 10px;
-    font-size:11px;color:var(--ink);font-family:var(--font-body);resize:none;overflow:hidden;line-height:1.4;min-height:32px;display:block;
-  }
+  .lap-row .lap-note-input{width:100%;background:var(--surface-soft);border:1px solid var(--line);border-radius:8px;padding:6px 10px;font-size:11px;color:var(--ink);font-family:var(--font-body);resize:none;overflow:hidden;line-height:1.4;min-height:32px;display:block;}
   .lap-row .lap-note-input::placeholder{color:#b7bce0;}
   .lap-row .lap-note-input:focus{outline:none;border-color:var(--primary-2);background:#fff;}
   .lap-row.best{background:var(--gold-soft);border-left:3px solid var(--gold);}
   .lap-row.best .lap-time{color:#b6790f;}
   .best-star{width:9px;height:9px;color:var(--gold);flex-shrink:0;}
-
   .empty{padding:32px 16px;text-align:center;color:#b7bce0;font-size:13px;}
   .empty .icon-svg{width:26px;height:26px;display:block;margin:0 auto 8px;opacity:.6;}
   .note-hint{font-size:9.5px;color:#a2a7cc;text-align:center;margin-top:8px;letter-spacing:0.3px;display:flex;align-items:center;justify-content:center;gap:4px;}
@@ -304,51 +173,31 @@
   .history-summary span{font-weight:600;color:var(--ink);}
   .history-summary .best{color:var(--gold);}
   .history-actions-row{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;}
-  .mini-btn{
-    background:var(--surface-soft);border:1px solid var(--line);border-radius:8px;padding:6px 11px;font-size:11px;font-weight:600;
-    color:var(--ink-dim);cursor:pointer;display:inline-flex;align-items:center;gap:5px;font-family:var(--font-body);
-  }
+  .mini-btn{background:var(--surface-soft);border:1px solid var(--line);border-radius:8px;padding:6px 11px;font-size:11px;font-weight:600;color:var(--ink-dim);cursor:pointer;display:inline-flex;align-items:center;gap:5px;font-family:var(--font-body);}
   .mini-btn.primary{background:var(--primary-1);border-color:var(--primary-1);color:#fff;}
   .mini-btn.gold{background:var(--gold);border-color:var(--gold);color:#fff;}
   .mini-btn.danger-icon{background:transparent;border:0;color:var(--red);margin-left:auto;padding:6px 8px;}
-
   .history-detail{margin-top:10px;padding-top:10px;border-top:1px solid var(--line);}
-  .history-detail-header{
-    display:grid;grid-template-columns:28px 1fr 1fr 1fr;gap:6px;padding:6px 10px;font-size:9px;font-weight:700;color:var(--ink-dim);
-    text-transform:uppercase;letter-spacing:0.5px;background:var(--surface-soft);border-radius:6px;
-  }
-  .history-detail-row{
-    display:grid;grid-template-columns:28px 1fr 1fr 1fr;gap:6px;padding:6px 10px;font-size:12px;border-bottom:1px solid var(--surface-soft);
-  }
+  .history-detail-header{display:grid;grid-template-columns:28px 1fr 1fr 1fr;gap:6px;padding:6px 10px;font-size:9px;font-weight:700;color:var(--ink-dim);text-transform:uppercase;letter-spacing:0.5px;background:var(--surface-soft);border-radius:6px;}
+  .history-detail-row{display:grid;grid-template-columns:28px 1fr 1fr 1fr;gap:6px;padding:6px 10px;font-size:12px;border-bottom:1px solid var(--surface-soft);}
   .history-detail-row .note-cell{color:var(--ink-dim);font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
   .history-legend{margin-top:6px;font-size:11px;color:var(--ink-dim);text-align:right;padding:4px 10px;background:var(--surface-soft);border-radius:6px;display:flex;align-items:center;justify-content:flex-end;gap:4px;}
   .history-legend .icon-svg{color:var(--gold);}
-
   .history-actions{display:flex;gap:10px;margin-top:4px;flex-wrap:wrap;}
   .history-actions button{flex:1;min-width:130px;}
 
   /* ===== BUTTONS ===== */
-  .btn-primary,.btn-gold,.btn-danger,.btn-outline{
-    border:0;border-radius:var(--radius-md);font-weight:700;cursor:pointer;transition:.2s;min-height:44px;padding:0 14px;
-    display:inline-flex;align-items:center;justify-content:center;gap:7px;font-size:12.5px;font-family:var(--font-body);
-  }
+  .btn-primary,.btn-gold,.btn-danger,.btn-outline{border:0;border-radius:var(--radius-md);font-weight:700;cursor:pointer;transition:.2s;min-height:44px;padding:0 14px;display:inline-flex;align-items:center;justify-content:center;gap:7px;font-size:12.5px;font-family:var(--font-body);}
   .btn-primary{background:linear-gradient(135deg,var(--primary-1),var(--primary-2));color:#fff;}
   .btn-gold{background:linear-gradient(135deg,var(--gold),#d48a1a);color:#fff;}
   .btn-danger{background:linear-gradient(135deg,var(--red),#dc2626);color:#fff;}
   .btn-outline{background:var(--surface);border:1px solid var(--line);color:var(--ink-dim);}
   .btn-primary:active,.btn-gold:active,.btn-danger:active,.btn-outline:active{opacity:0.85;transform:scale(0.97);}
   .btn-primary:disabled,.btn-gold:disabled,.btn-danger:disabled,.btn-outline:disabled{opacity:0.35;cursor:not-allowed;}
-
   .export-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:16px;}
   .export-row button span.hint{font-size:8.5px;opacity:0.75;font-weight:500;}
 
-  /* ===== SCREENSHOT AREA ===== */
-  #screenshot-area{
-    background:var(--bg);
-    padding:22px 20px 30px;
-    border-radius:var(--radius-xl);
-    width:100%;
-  }
+  #screenshot-area{background:var(--bg);padding:22px 20px 30px;border-radius:var(--radius-xl);width:100%;}
   @media (max-width:400px){
     .timer{font-size:clamp(40px,13vw,54px);}
     .stats{gap:5px;}
@@ -370,7 +219,7 @@
 </head>
 <body>
 
-<!-- ===== FORM LOGIN KUSTOM (HTML Biasa) ===== -->
+<!-- ===== FORM LOGIN KUSTOM ===== -->
 <div id="loginScreen">
   <div class="login-card">
     <div class="login-brand">
@@ -380,9 +229,7 @@
         <div class="sub">Abhisara · Precision Timing</div>
       </div>
     </div>
-    
     <div class="login-error" id="loginError">Email atau password salah!</div>
-    
     <div class="login-field">
       <label for="loginEmail">Email</label>
       <input type="email" id="loginEmail" placeholder="Masukkan email" autocomplete="email">
@@ -391,7 +238,6 @@
       <label for="loginPass">Password</label>
       <input type="password" id="loginPass" placeholder="Masukkan password" autocomplete="current-password">
     </div>
-    
     <button class="login-btn" id="loginBtn">Masuk</button>
     <div class="login-hint">Gunakan email dan password yang sudah diundang oleh admin.</div>
   </div>
@@ -401,7 +247,6 @@
 <div class="app" id="mainApp">
 <div id="screenshot-area">
 
-  <!-- TOPBAR -->
   <div class="topbar">
     <div class="brand">
       <div class="brand-mark"><img src="logo-ferc.png" alt="FERC"></div>
@@ -418,7 +263,6 @@
     </div>
   </div>
 
-  <!-- HERO -->
   <div class="hero">
     <div class="hero-top">
       <div>
@@ -443,7 +287,6 @@
 
   <button id="resetBtn"></button>
 
-  <!-- STATS -->
   <div class="stats">
     <div class="stat-card"><div class="stat-label">Lap</div><div class="stat-value" id="lapCount2">0</div></div>
     <div class="stat-card"><div class="stat-label">Rata-rata</div><div class="stat-value" id="avg">—</div></div>
@@ -451,7 +294,6 @@
     <div class="stat-card"><div class="stat-label">Total</div><div class="stat-value" id="totalTime">—</div></div>
   </div>
 
-  <!-- TABS -->
   <div class="tabs">
     <button class="tab-btn active" data-tab="tabTimer" id="tabBtnTimer"></button>
     <button class="tab-btn" data-tab="tabPenilaian" id="tabBtnPenilaian"></button>
@@ -460,7 +302,6 @@
 
   <!-- TAB: TIMER -->
   <div id="tabTimer" class="tab-content active">
-
     <div class="section-title">
       <span class="title-left" id="titleSetelan">Setelan Karburator</span>
       <span class="count" id="settingSummary">Belum diisi</span>
@@ -503,7 +344,6 @@
       <span class="title-left" id="titlePenilaian">Penilaian</span>
       <span class="count">Otomatis</span>
     </div>
-
     <div class="penilaian-card">
       <div class="penilaian-grid">
         <div class="penilaian-field">
@@ -521,7 +361,6 @@
         <div class="nilai-item primary"><div class="nilai-label" id="labelNA">NA</div><div class="nilai-value" id="naValue">—</div></div>
       </div>
     </div>
-
     <div class="formula-card">
       <div class="formula-title" id="titleRumus">Rumus:</div>
       <div class="formula-list">
@@ -548,7 +387,6 @@
 
   </div><!-- /#screenshot-area -->
 
-  <!-- EXPORT UTAMA -->
   <div class="export-row">
     <button id="exportBtn" class="btn-primary" disabled></button>
     <button id="copyBtn" class="btn-outline" disabled></button>
@@ -557,6 +395,135 @@
 </div>
 
 <script>
+/* =====================================================================
+   1. DOM LOGIN (HARUS PALING ATAS, sebelum netlifyIdentity.init)
+   ===================================================================== */
+const loginScreen = document.getElementById('loginScreen');
+const mainApp = document.getElementById('mainApp');
+const loginEmail = document.getElementById('loginEmail');
+const loginPass = document.getElementById('loginPass');
+const loginBtn = document.getElementById('loginBtn');
+const loginError = document.getElementById('loginError');
+const logoutBtn = document.getElementById('logoutBtn');
+
+let appStarted = false;
+function showApp() {
+  loginScreen.classList.add('hidden');
+  mainApp.style.display = 'block';
+  if (appStarted) return;
+  appStarted = true;
+  const hasSavedData = loadData();
+  if (!hasSavedData) { renderLaps(); hitungPenilaian(); updateSettingSummary(); }
+  loadHistory();
+}
+function showLogin() {
+  loginScreen.classList.remove('hidden');
+  mainApp.style.display = 'none';
+}
+function resetLoginBtn() {
+  loginBtn.disabled = false;
+  loginBtn.textContent = 'Masuk';
+}
+function showLoginError(msg) {
+  loginError.textContent = msg;
+  loginError.classList.add('show');
+}
+
+/* =====================================================================
+   2. NETLIFY IDENTITY
+   - login() & acceptInvite() ada di netlifyIdentity.gotrue, BUKAN di widget
+   - Di localhost / file:// isi APIUrl dengan domain Netlify kamu, contoh:
+     netlifyIdentity.init({ APIUrl: 'https://NAMA-SITUS.netlify.app/.netlify/identity' });
+   ===================================================================== */
+// Simpan token SEKARANG, sebelum widget sempat mengubah/menghapus hash URL
+const INVITE_TOKEN = (window.location.hash.match(/invite_token=([^&]*)/) || [])[1] || null;
+const hasInviteToken = !!INVITE_TOKEN;
+
+if (window.netlifyIdentity) {
+  // Cegah modal bawaan widget muncul menimpa form kustom (terutama di link undangan)
+  netlifyIdentity.on('open', () => netlifyIdentity.close());
+  netlifyIdentity.on('init', user => { user ? showApp() : showLogin(); });
+  netlifyIdentity.on('logout', () => { appStarted = false; showLogin(); });
+  netlifyIdentity.init();
+} else {
+  showLogin();
+  showLoginError('Widget Netlify Identity gagal dimuat. Cek koneksi internet.');
+}
+
+/* =====================================================================
+   3. LOGIN / TERIMA UNDANGAN
+   ===================================================================== */
+function doLogin() {
+  const email = loginEmail.value.trim();
+  const password = loginPass.value;
+
+  if (!window.netlifyIdentity || !netlifyIdentity.gotrue) {
+    showLoginError('Identity belum siap. Pastikan Identity sudah di-Enable di Netlify dan situs dibuka lewat domain Netlify.');
+    return;
+  }
+  const inviteMatch = INVITE_TOKEN ? [null, INVITE_TOKEN] : null;
+
+  if (!password || (!inviteMatch && !email)) {
+    showLoginError(inviteMatch ? 'Password wajib diisi!' : 'Email dan password wajib diisi!');
+    return;
+  }
+
+  loginBtn.disabled = true;
+  loginBtn.textContent = 'Memproses...';
+  loginError.classList.remove('show');
+
+  const auth = netlifyIdentity.gotrue;
+  let request;
+  try {
+    request = inviteMatch
+      ? auth.acceptInvite(inviteMatch[1], password, true)
+      : auth.login(email, password, true);
+  } catch (err) {
+    console.error(err);
+    showLoginError('Terjadi kesalahan: ' + (err && err.message ? err.message : err));
+    resetLoginBtn();
+    return;
+  }
+
+  request.then(() => {
+    // Hapus token undangan dari URL
+    window.history.replaceState(null, '', window.location.pathname + window.location.search);
+    resetLoginBtn();
+    loginPass.value = '';
+    showApp();
+  }).catch(err => {
+    console.error(err);
+    const detail = err && (err.json && err.json.error_description || err.message);
+    showLoginError(inviteMatch
+      ? 'Gagal membuat password. Link mungkin sudah kedaluwarsa.'
+      : (detail && /confirm/i.test(detail) ? 'Email belum dikonfirmasi. Cek email undangan.' : 'Email atau password salah!'));
+    loginPass.value = '';
+    resetLoginBtn();
+  });
+}
+
+loginBtn.addEventListener('click', doLogin);
+loginEmail.addEventListener('keydown', e => { if (e.key === 'Enter') loginPass.focus(); });
+loginPass.addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+
+// Jika membuka link undangan, email tidak perlu diisi
+if (hasInviteToken) {
+  loginEmail.closest('.login-field').style.display = 'none';
+  loginBtn.textContent = 'Buat Password & Masuk';
+  document.querySelector('.login-hint').textContent = 'Buat password baru untuk akun undanganmu.';
+  loginPass.autocomplete = 'new-password';
+}
+
+logoutBtn.addEventListener('click', () => {
+  if (confirm('Yakin mau logout?')) {
+    if (window.netlifyIdentity) netlifyIdentity.logout();
+    appStarted = false;
+    showLogin();
+    loginEmail.value = '';
+    loginPass.value = '';
+  }
+});
+
 /* ===================== ICONS ===================== */
 const ICONS = {
   play:'<path d="M8 5v14l11-7z"/>',
@@ -614,14 +581,6 @@ let pauseElapsed = 0;
 let history = [];
 
 /* ===================== DOM ===================== */
-const loginScreen = document.getElementById('loginScreen');
-const mainApp = document.getElementById('mainApp');
-const loginEmail = document.getElementById('loginEmail');
-const loginPass = document.getElementById('loginPass');
-const loginBtn = document.getElementById('loginBtn');
-const loginError = document.getElementById('loginError');
-const logoutBtn = document.getElementById('logoutBtn');
-
 const timerEl = document.getElementById('timer');
 const statusText = document.getElementById('statusText');
 const statusDot = document.getElementById('statusDot');
@@ -1018,7 +977,6 @@ function downloadText(filename, mime, text) {
   a.href = url; a.download = filename; a.click();
   URL.revokeObjectURL(url);
 }
-
 function exportSingleSession(session) {
   const rows = lapsToRows(session.date, session.sessionName, session.low, session.high, session.notes, session.laps);
   const csv = rowsToDelimited(rows, ';', true);
@@ -1313,87 +1271,11 @@ screenshotBtn.addEventListener('click', function () {
 
 /* ===================== KEYBOARD SHORTCUTS ===================== */
 document.addEventListener('keydown', (e) => {
+  if (mainApp.style.display !== 'block') return;
   const tag = e.target.tagName;
   if (tag === 'INPUT' || tag === 'TEXTAREA') return;
   if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); if (!lapBtn.disabled) lapBtn.click(); }
   if (e.key === 's' || e.key === 'S') startBtn.click();
-});
-
-/* ===================== LOGIN & INIT NETLIFY IDENTITY ===================== */
-// Inisialisasi widget (Dipindahkan ke bawah agar variabel sudah siap)
-if (window.netlifyIdentity) {
-  window.netlifyIdentity.on("init", user => {
-    if (!user) {
-      loginScreen.classList.remove('hidden');
-      mainApp.style.display = 'none';
-    } else {
-      loginScreen.classList.add('hidden');
-      mainApp.style.display = 'block';
-      
-      // Load data setelah login berhasil
-      const hasSavedData = loadData();
-      if (!hasSavedData) { renderLaps(); hitungPenilaian(); updateSettingSummary(); }
-      loadHistory();
-    }
-  });
-  window.netlifyIdentity.init();
-}
-
-// Proses Login Manual & Terima Undangan
-function doLogin() {
-  const email = loginEmail.value.trim();
-  const password = loginPass.value;
-  
-  if (!email || !password) {
-    loginError.textContent = 'Email dan password wajib diisi!';
-    loginError.classList.add('show');
-    return;
-  }
-
-  loginBtn.disabled = true;
-  loginBtn.textContent = 'Memproses...';
-  loginError.classList.remove('show');
-
-  // Cek token undangan
-  const hash = window.location.hash;
-  const inviteTokenMatch = hash.match(/invite_token=([^&]*)/);
-  
-  if (inviteTokenMatch) {
-    const token = inviteTokenMatch[1];
-    window.netlifyIdentity.acceptInvite(token, password, true)
-      .catch(err => {
-        console.error(err);
-        loginError.textContent = 'Gagal membuat password. Link mungkin kedaluwarsa.';
-        loginError.classList.add('show');
-        loginBtn.disabled = false;
-        loginBtn.textContent = 'Masuk';
-      });
-  } else {
-    // Login Biasa
-    window.netlifyIdentity.login(email, password, true)
-      .catch(err => {
-        console.error(err);
-        loginError.textContent = 'Email atau password salah!';
-        loginError.classList.add('show');
-        loginPass.value = '';
-        loginBtn.disabled = false;
-        loginBtn.textContent = 'Masuk';
-      });
-  }
-}
-
-loginBtn.addEventListener('click', doLogin);
-loginEmail.addEventListener('keydown', e => { if (e.key === 'Enter') loginPass.focus(); });
-loginPass.addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
-
-logoutBtn.addEventListener('click', () => {
-  if (confirm('Yakin mau logout?')) {
-    window.netlifyIdentity.logout();
-    loginScreen.classList.remove('hidden');
-    mainApp.style.display = 'none';
-    loginEmail.value = '';
-    loginPass.value = '';
-  }
 });
 </script>
 </body>
