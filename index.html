@@ -76,16 +76,22 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 10px;
+    gap: 12px;
     margin-bottom: 24px;
   }
   .login-brand-mark {
-    width: 48px; height: 48px;
+    width: 56px; height: 56px;
     border-radius: 14px;
-    background: linear-gradient(135deg, var(--primary-1), var(--primary-2));
+    background: #fff;
     display: flex; align-items: center; justify-content: center;
-    box-shadow: 0 8px 20px var(--primary-glow);
-    color: #fff; font-family: var(--font-display); font-weight: 800; font-size: 20px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    overflow: hidden;
+    padding: 6px;
+    border: 1px solid var(--line);
+    flex-shrink: 0;
+  }
+  .login-brand-mark img {
+    width: 100%; height: 100%; object-fit: contain; display: block;
   }
   .login-brand-text h1 {
     font-family: var(--font-display); font-size: 18px; font-weight: 700;
@@ -188,11 +194,16 @@
   .topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;gap:10px;flex-wrap:wrap;}
   .brand{display:flex;align-items:center;gap:10px;}
   .brand-mark{
-    width:38px;height:38px;border-radius:12px;flex-shrink:0;
-    background:linear-gradient(135deg,var(--primary-1),var(--primary-2));
+    width:42px;height:42px;border-radius:10px;flex-shrink:0;
+    background:#fff;
     display:flex;align-items:center;justify-content:center;
-    box-shadow:0 8px 18px var(--primary-glow);
-    color:#fff;font-family:var(--font-display);font-weight:800;font-size:16px;
+    box-shadow:0 4px 12px rgba(0,0,0,0.08);
+    overflow:hidden;
+    padding:4px;
+    border:1px solid var(--line);
+  }
+  .brand-mark img{
+    width:100%;height:100%;object-fit:contain;display:block;
   }
   .brand-text h1{font-family:var(--font-display);font-size:16px;font-weight:700;letter-spacing:-0.2px;}
   .brand-text .sub{font-size:11px;color:var(--ink-dim);font-weight:500;letter-spacing:0.4px;text-transform:uppercase;}
@@ -416,6 +427,7 @@
     .history-actions{flex-direction:column;}
     .history-actions button{min-width:0;}
     .date-badge{font-size:10px;padding:6px 10px;}
+    .brand-mark{width:38px;height:38px;}
   }
 </style>
 </head>
@@ -425,7 +437,7 @@
 <div id="loginScreen">
   <div class="login-card">
     <div class="login-brand">
-      <div class="login-brand-mark">A</div>
+      <div class="login-brand-mark"><img src="logo-ferc.png" alt="FERC"></div>
       <div class="login-brand-text">
         <h1>Lap Timer</h1>
         <div class="sub">Abhisara · Precision Timing</div>
@@ -452,7 +464,7 @@
   <!-- TOPBAR -->
   <div class="topbar">
     <div class="brand">
-      <div class="brand-mark">A</div>
+      <div class="brand-mark"><img src="logo-ferc.png" alt="FERC"></div>
       <div class="brand-text">
         <h1>Lap Timer</h1>
         <div class="sub">Abhisara · Precision Timing</div>
@@ -606,7 +618,6 @@
 
 <script>
 /* ===================== KONFIGURASI LOGIN ===================== */
-// GANTI USERNAME & PASSWORD DI SINI
 const AUTH_USER = 'abhisara';
 const AUTH_PASS = '12345';
 const AUTH_KEY = 'abhisaraLoggedIn';
@@ -645,7 +656,6 @@ function doLogin() {
     localStorage.setItem(AUTH_KEY, 'true');
     loginError.classList.remove('show');
     showApp();
-    // reload data & render setelah login
     const hasSavedData = loadData();
     if (!hasSavedData) { renderLaps(); hitungPenilaian(); updateSettingSummary(); }
     loadHistory();
@@ -667,10 +677,8 @@ logoutBtn.addEventListener('click', () => {
   }
 });
 
-// Cek status login saat halaman dimuat
 if (checkLogin()) {
   showApp();
-  // Data akan di-load setelah script utama jalan (di bawah)
 } else {
   showLogin();
 }
