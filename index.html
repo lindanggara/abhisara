@@ -557,102 +557,6 @@
 </div>
 
 <script>
-/* ===================== KONFIGURASI NETLIFY IDENTITY WIDGET ===================== */
-// 1. Inisialisasi widget
-if (window.netlifyIdentity) {
-  window.netlifyIdentity.on("init", user => {
-    if (!user) {
-      // Jika belum login, pastikan layar login tampil
-      loginScreen.classList.remove('hidden');
-      mainApp.style.display = 'none';
-    } else {
-      // Jika sudah login (termasuk setelah terima undangan), tampilkan dashboard
-      loginScreen.classList.add('hidden');
-      mainApp.style.display = 'block';
-      
-      // Load data setelah login berhasil
-      const hasSavedData = loadData();
-      if (!hasSavedData) { renderLaps(); hitungPenilaian(); updateSettingSummary(); }
-      loadHistory();
-    }
-  });
-  window.netlifyIdentity.init();
-}
-
-/* ===================== LOGIN KUSTOM ===================== */
-const loginScreen = document.getElementById('loginScreen');
-const mainApp = document.getElementById('mainApp');
-const loginEmail = document.getElementById('loginEmail');
-const loginPass = document.getElementById('loginPass');
-const loginBtn = document.getElementById('loginBtn');
-const loginError = document.getElementById('loginError');
-const logoutBtn = document.getElementById('logoutBtn');
-
-// Proses Login (termasuk Menerima Undangan)
-function doLogin() {
-  const email = loginEmail.value.trim();
-  const password = loginPass.value;
-  
-  if (!email || !password) {
-    loginError.textContent = 'Email dan password wajib diisi!';
-    loginError.classList.add('show');
-    return;
-  }
-
-  loginBtn.disabled = true;
-  loginBtn.textContent = 'Memproses...';
-  loginError.classList.remove('show');
-
-  // Cek apakah ada token undangan di URL (Proses Pembuatan Password Baru)
-  const hash = window.location.hash;
-  const inviteTokenMatch = hash.match(/invite_token=([^&]*)/);
-  
-  if (inviteTokenMatch) {
-    const token = inviteTokenMatch[1];
-    window.netlifyIdentity.acceptInvite(token, password, true)
-      .then(() => {
-        // Netlify akan otomatis mentrigger event 'init' di atas
-        // yang akan menampilkan dashboard dan menghapus URL token.
-      })
-      .catch(err => {
-        console.error(err);
-        loginError.textContent = 'Gagal membuat password. Link mungkin sudah kedaluwarsa.';
-        loginError.classList.add('show');
-        loginBtn.disabled = false;
-        loginBtn.textContent = 'Masuk';
-      });
-  } else {
-    // Proses Login Biasa
-    window.netlifyIdentity.login(email, password, true)
-      .then(() => {
-        // Netlify akan otomatis mentrigger event 'init' di atas
-      })
-      .catch(err => {
-        console.error(err);
-        loginError.textContent = 'Email atau password salah!';
-        loginError.classList.add('show');
-        loginPass.value = '';
-        loginBtn.disabled = false;
-        loginBtn.textContent = 'Masuk';
-      });
-  }
-}
-
-loginBtn.addEventListener('click', doLogin);
-loginEmail.addEventListener('keydown', e => { if (e.key === 'Enter') loginPass.focus(); });
-loginPass.addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
-
-// Proses Logout
-logoutBtn.addEventListener('click', () => {
-  if (confirm('Yakin mau logout?')) {
-    window.netlifyIdentity.logout();
-    loginScreen.classList.remove('hidden');
-    mainApp.style.display = 'none';
-    loginEmail.value = '';
-    loginPass.value = '';
-  }
-});
-
 /* ===================== ICONS ===================== */
 const ICONS = {
   play:'<path d="M8 5v14l11-7z"/>',
@@ -710,6 +614,14 @@ let pauseElapsed = 0;
 let history = [];
 
 /* ===================== DOM ===================== */
+const loginScreen = document.getElementById('loginScreen');
+const mainApp = document.getElementById('mainApp');
+const loginEmail = document.getElementById('loginEmail');
+const loginPass = document.getElementById('loginPass');
+const loginBtn = document.getElementById('loginBtn');
+const loginError = document.getElementById('loginError');
+const logoutBtn = document.getElementById('logoutBtn');
+
 const timerEl = document.getElementById('timer');
 const statusText = document.getElementById('statusText');
 const statusDot = document.getElementById('statusDot');
@@ -1405,6 +1317,83 @@ document.addEventListener('keydown', (e) => {
   if (tag === 'INPUT' || tag === 'TEXTAREA') return;
   if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); if (!lapBtn.disabled) lapBtn.click(); }
   if (e.key === 's' || e.key === 'S') startBtn.click();
+});
+
+/* ===================== LOGIN & INIT NETLIFY IDENTITY ===================== */
+// Inisialisasi widget (Dipindahkan ke bawah agar variabel sudah siap)
+if (window.netlifyIdentity) {
+  window.netlifyIdentity.on("init", user => {
+    if (!user) {
+      loginScreen.classList.remove('hidden');
+      mainApp.style.display = 'none';
+    } else {
+      loginScreen.classList.add('hidden');
+      mainApp.style.display = 'block';
+      
+      // Load data setelah login berhasil
+      const hasSavedData = loadData();
+      if (!hasSavedData) { renderLaps(); hitungPenilaian(); updateSettingSummary(); }
+      loadHistory();
+    }
+  });
+  window.netlifyIdentity.init();
+}
+
+// Proses Login Manual & Terima Undangan
+function doLogin() {
+  const email = loginEmail.value.trim();
+  const password = loginPass.value;
+  
+  if (!email || !password) {
+    loginError.textContent = 'Email dan password wajib diisi!';
+    loginError.classList.add('show');
+    return;
+  }
+
+  loginBtn.disabled = true;
+  loginBtn.textContent = 'Memproses...';
+  loginError.classList.remove('show');
+
+  // Cek token undangan
+  const hash = window.location.hash;
+  const inviteTokenMatch = hash.match(/invite_token=([^&]*)/);
+  
+  if (inviteTokenMatch) {
+    const token = inviteTokenMatch[1];
+    window.netlifyIdentity.acceptInvite(token, password, true)
+      .catch(err => {
+        console.error(err);
+        loginError.textContent = 'Gagal membuat password. Link mungkin kedaluwarsa.';
+        loginError.classList.add('show');
+        loginBtn.disabled = false;
+        loginBtn.textContent = 'Masuk';
+      });
+  } else {
+    // Login Biasa
+    window.netlifyIdentity.login(email, password, true)
+      .catch(err => {
+        console.error(err);
+        loginError.textContent = 'Email atau password salah!';
+        loginError.classList.add('show');
+        loginPass.value = '';
+        loginBtn.disabled = false;
+        loginBtn.textContent = 'Masuk';
+      });
+  }
+}
+
+loginBtn.addEventListener('click', doLogin);
+loginEmail.addEventListener('keydown', e => { if (e.key === 'Enter') loginPass.focus(); });
+loginPass.addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+
+logoutBtn.addEventListener('click', () => {
+  if (confirm('Yakin mau logout?')) {
+    window.netlifyIdentity.logout();
+    loginScreen.classList.remove('hidden');
+    mainApp.style.display = 'none';
+    loginEmail.value = '';
+    loginPass.value = '';
+  }
 });
 </script>
 </body>
