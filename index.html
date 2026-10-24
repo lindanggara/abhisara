@@ -465,16 +465,7 @@ function showLoginError(msg) {
 const INVITE_TOKEN = (window.location.hash.match(/invite_token=([^&]*)/) || [])[1] || null;
 const hasInviteToken = !!INVITE_TOKEN;
 
-if (window.netlifyIdentity) {
-  // Cegah modal bawaan widget muncul menimpa form kustom (terutama di link undangan)
-  netlifyIdentity.on('open', () => netlifyIdentity.close());
-  netlifyIdentity.on('init', user => { user ? showApp() : showLogin(); });
-  netlifyIdentity.on('logout', () => { appStarted = false; showLogin(); });
-  netlifyIdentity.init();
-} else {
-  showLogin();
-  showLoginError('Widget Netlify Identity gagal dimuat. Cek koneksi internet.');
-}
+// (init Identity dipindah ke paling bawah script, lihat startIdentity())
 
 /* =====================================================================
    3. LOGIN / TERIMA UNDANGAN
@@ -1326,6 +1317,24 @@ document.addEventListener('keydown', (e) => {
   if (mq.addEventListener) mq.addEventListener('change', applyView);
   else if (mq.addListener) mq.addListener(applyView);
   applyView();
+})();
+/* =====================================================================
+   START IDENTITY — HARUS PALING BAWAH
+   Event 'init' bisa langsung terpanggil (jika user sudah login) dan
+   memanggil showApp() -> loadData(), yang memakai variabel di atas.
+   Jadi baru dijalankan setelah SEMUA variabel & fungsi terdefinisi.
+   ===================================================================== */
+(function startIdentity() {
+  if (window.netlifyIdentity) {
+    // Cegah modal bawaan widget muncul menimpa form kustom (terutama di link undangan)
+    netlifyIdentity.on('open', () => netlifyIdentity.close());
+    netlifyIdentity.on('init', user => { user ? showApp() : showLogin(); });
+    netlifyIdentity.on('logout', () => { appStarted = false; showLogin(); });
+    netlifyIdentity.init();
+  } else {
+    showLogin();
+    showLoginError('Widget Netlify Identity gagal dimuat. Cek koneksi internet.');
+  }
 })();
 </script>
 </body>
