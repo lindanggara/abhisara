@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#f2f4fb">
 <title>ABHISARA · Lap Timer Dashboard</title>
 
-<!-- SCRIPT RESMI NETLIFY IDENTITY (PENGGANTI GOTRUE-JS) -->
+<!-- SCRIPT RESMI NETLIFY IDENTITY -->
 <script type="text/javascript" src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
 
 <style>
@@ -558,8 +558,24 @@
 
 <script>
 /* ===================== KONFIGURASI NETLIFY IDENTITY WIDGET ===================== */
-// Inisialisasi widget resmi Netlify
+// 1. Inisialisasi widget
 if (window.netlifyIdentity) {
+  window.netlifyIdentity.on("init", user => {
+    if (!user) {
+      // Jika belum login, pastikan layar login tampil
+      loginScreen.classList.remove('hidden');
+      mainApp.style.display = 'none';
+    } else {
+      // Jika sudah login (termasuk setelah terima undangan), tampilkan dashboard
+      loginScreen.classList.add('hidden');
+      mainApp.style.display = 'block';
+      
+      // Load data setelah login berhasil
+      const hasSavedData = loadData();
+      if (!hasSavedData) { renderLaps(); hitungPenilaian(); updateSettingSummary(); }
+      loadHistory();
+    }
+  });
   window.netlifyIdentity.init();
 }
 
@@ -571,16 +587,6 @@ const loginPass = document.getElementById('loginPass');
 const loginBtn = document.getElementById('loginBtn');
 const loginError = document.getElementById('loginError');
 const logoutBtn = document.getElementById('logoutBtn');
-
-// Cek apakah user sudah login saat halaman dimuat
-const currentUser = window.netlifyIdentity.currentUser();
-if (currentUser) {
-  loginScreen.classList.add('hidden');
-  mainApp.style.display = 'block';
-} else {
-  loginScreen.classList.remove('hidden');
-  mainApp.style.display = 'none';
-}
 
 // Proses Login (termasuk Menerima Undangan)
 function doLogin() {
@@ -597,50 +603,35 @@ function doLogin() {
   loginBtn.textContent = 'Memproses...';
   loginError.classList.remove('show');
 
-  // Cek apakah ada token undangan di URL
+  // Cek apakah ada token undangan di URL (Proses Pembuatan Password Baru)
   const hash = window.location.hash;
   const inviteTokenMatch = hash.match(/invite_token=([^&]*)/);
   
   if (inviteTokenMatch) {
-    // Jika sedang menerima undangan (Membuat Password Baru)
     const token = inviteTokenMatch[1];
     window.netlifyIdentity.acceptInvite(token, password, true)
-      .then(response => {
-        loginScreen.classList.add('hidden');
-        mainApp.style.display = 'block';
-        window.history.replaceState(null, null, window.location.pathname);
-        
-        const hasSavedData = loadData();
-        if (!hasSavedData) { renderLaps(); hitungPenilaian(); updateSettingSummary(); }
-        loadHistory();
+      .then(() => {
+        // Netlify akan otomatis mentrigger event 'init' di atas
+        // yang akan menampilkan dashboard dan menghapus URL token.
       })
-      .catch(error => {
-        console.error(error);
+      .catch(err => {
+        console.error(err);
         loginError.textContent = 'Gagal membuat password. Link mungkin sudah kedaluwarsa.';
         loginError.classList.add('show');
-      })
-      .finally(() => {
         loginBtn.disabled = false;
         loginBtn.textContent = 'Masuk';
       });
   } else {
-    // Jika login biasa
+    // Proses Login Biasa
     window.netlifyIdentity.login(email, password, true)
-      .then(response => {
-        loginScreen.classList.add('hidden');
-        mainApp.style.display = 'block';
-        
-        const hasSavedData = loadData();
-        if (!hasSavedData) { renderLaps(); hitungPenilaian(); updateSettingSummary(); }
-        loadHistory();
+      .then(() => {
+        // Netlify akan otomatis mentrigger event 'init' di atas
       })
-      .catch(error => {
-        console.error(error);
+      .catch(err => {
+        console.error(err);
         loginError.textContent = 'Email atau password salah!';
         loginError.classList.add('show');
         loginPass.value = '';
-      })
-      .finally(() => {
         loginBtn.disabled = false;
         loginBtn.textContent = 'Masuk';
       });
