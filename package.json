@@ -1,8 +1,8 @@
 {
-  "name": "abhisara-lap-timer",
-  "private": true,
+  "name": "abhisara",
   "version": "1.0.0",
+  "description": "Lap Timer Dashboard",
   "dependencies": {
-    "@netlify/blobs": "^8.1.1"
+    "@netlify/blobs": "^8.1.0"
   }
 }

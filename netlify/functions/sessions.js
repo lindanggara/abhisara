@@ -1,9 +1,7 @@
+// netlify/functions/sessions.js
 // Backend history bersama untuk Lap Timer (Netlify Functions + Netlify Blobs)
 // Endpoint: /.netlify/functions/sessions
-//   GET            -> daftar semua sesi bersama
-//   POST           -> simpan 1 sesi (body JSON)
-//   DELETE ?id=123 -> hapus 1 sesi (pembuat sesi atau admin)
-//   DELETE ?all=1  -> hapus semua sesi milik sendiri (admin: semua sesi)
+
 import { connectLambda, getStore } from '@netlify/blobs';
 
 const json = (statusCode, data) => ({
@@ -27,6 +25,7 @@ export const handler = async (event, context) => {
   const isAdmin = Array.isArray(roles) && roles.includes('admin');
 
   try {
+    // 1. AMBIL SEMUA DATA (GET)
     if (event.httpMethod === 'GET') {
       const { blobs } = await store.list({ prefix: 'session:' });
       const items = await Promise.all(blobs.map((b) => store.get(b.key, { type: 'json' })));
@@ -34,13 +33,21 @@ export const handler = async (event, context) => {
       return json(200, { sessions, me: { email, isAdmin } });
     }
 
+    // 2. SIMPAN DATA BARU (POST)
     if (event.httpMethod === 'POST') {
       const s = JSON.parse(event.body || '{}');
+      
+      // Validasi sederhana
       if (!Number.isFinite(s.id) || !Array.isArray(s.laps) || s.laps.length === 0 || s.laps.length > 1000) {
         return json(400, { error: 'Data sesi tidak valid.' });
       }
+      
       const key = 'session:' + s.id;
-      if (await store.get(key, { type: 'json' })) return json(200, { ok: true, duplicate: true }); // aman untuk retry
+      
+      // Cek duplikasi (aman jika tombol terklik 2x)
+      if (await store.get(key, { type: 'json' })) {
+        return json(200, { ok: true, duplicate: true }); 
+      }
 
       const clean = {
         id: s.id,
@@ -64,29 +71,43 @@ export const handler = async (event, context) => {
         by: email,
         savedAt: Date.now(),
       };
+      
       await store.setJSON(key, clean);
       return json(200, { ok: true });
     }
 
+    // 3. HAPUS DATA (DELETE)
     if (event.httpMethod === 'DELETE') {
       const q = event.queryStringParameters || {};
 
+      // Hapus Semua
       if (q.all) {
         const { blobs } = await store.list({ prefix: 'session:' });
         let deleted = 0;
         for (const b of blobs) {
           const item = await store.get(b.key, { type: 'json' });
-          if (item && (isAdmin || item.by === email)) { await store.delete(b.key); deleted++; }
+          if (item && (isAdmin || item.by === email)) { 
+            await store.delete(b.key); 
+            deleted++; 
+          }
         }
         return json(200, { ok: true, deleted });
       }
 
+      // Hapus Satu Sesi berdasarkan ID
       const id = Number(q.id);
       if (!Number.isFinite(id)) return json(400, { error: 'ID tidak valid.' });
+      
       const key = 'session:' + id;
       const item = await store.get(key, { type: 'json' });
-      if (!item) return json(200, { ok: true }); // sudah tidak ada
-      if (!isAdmin && item.by !== email) return json(403, { error: 'Hanya pembuat sesi atau admin.' });
+      
+      if (!item) return json(200, { ok: true }); // sudah terhapus
+      
+      // Cek apakah yang menghapus adalah pembuatnya atau admin
+      if (!isAdmin && item.by !== email) {
+        return json(403, { error: 'Hanya pembuat sesi atau admin yang bisa menghapus.' });
+      }
+      
       await store.delete(key);
       return json(200, { ok: true });
     }
