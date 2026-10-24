@@ -6,8 +6,8 @@
 <meta name="theme-color" content="#f2f4fb">
 <title>ABHISARA · Lap Timer Dashboard</title>
 
-<!-- Library resmi Netlify untuk form kustom -->
-<script src="https://unpkg.com/gotrue-js@1.0.1/dist/gotrue.min.js"></script>
+<!-- SCRIPT RESMI NETLIFY IDENTITY (PENGGANTI GOTRUE-JS) -->
+<script type="text/javascript" src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
 
 <style>
   :root{
@@ -557,12 +557,11 @@
 </div>
 
 <script>
-/* ===================== KONFIGURASI NETLIFY IDENTITY ===================== */
-// URL Netlify Identity (pastikan sesuai dengan domain Netlify kamu)
-const netlifyIdentity = new GoTrue({
-  APIUrl: 'https://abhisara.netlify.app/.netlify/identity',
-  setCookie: true
-});
+/* ===================== KONFIGURASI NETLIFY IDENTITY WIDGET ===================== */
+// Inisialisasi widget resmi Netlify
+if (window.netlifyIdentity) {
+  window.netlifyIdentity.init();
+}
 
 /* ===================== LOGIN KUSTOM ===================== */
 const loginScreen = document.getElementById('loginScreen');
@@ -574,7 +573,7 @@ const loginError = document.getElementById('loginError');
 const logoutBtn = document.getElementById('logoutBtn');
 
 // Cek apakah user sudah login saat halaman dimuat
-const currentUser = netlifyIdentity.currentUser();
+const currentUser = window.netlifyIdentity.currentUser();
 if (currentUser) {
   loginScreen.classList.add('hidden');
   mainApp.style.display = 'block';
@@ -598,18 +597,17 @@ function doLogin() {
   loginBtn.textContent = 'Memproses...';
   loginError.classList.remove('show');
 
-  // --- DETEKSI TOKEN UNDANGAN DARI URL ---
+  // Cek apakah ada token undangan di URL
   const hash = window.location.hash;
   const inviteTokenMatch = hash.match(/invite_token=([^&]*)/);
   
   if (inviteTokenMatch) {
-    // JIKA SEDANG MENERIMA UNDANGAN (Membuat Password Baru)
+    // Jika sedang menerima undangan (Membuat Password Baru)
     const token = inviteTokenMatch[1];
-    netlifyIdentity.acceptInvite(token, password, true)
+    window.netlifyIdentity.acceptInvite(token, password, true)
       .then(response => {
         loginScreen.classList.add('hidden');
         mainApp.style.display = 'block';
-        // Bersihkan URL dari token agar rapi
         window.history.replaceState(null, null, window.location.pathname);
         
         const hasSavedData = loadData();
@@ -626,8 +624,8 @@ function doLogin() {
         loginBtn.textContent = 'Masuk';
       });
   } else {
-    // JIKA LOGIN BIASA
-    netlifyIdentity.login(email, password, true)
+    // Jika login biasa
+    window.netlifyIdentity.login(email, password, true)
       .then(response => {
         loginScreen.classList.add('hidden');
         mainApp.style.display = 'block';
@@ -656,15 +654,11 @@ loginPass.addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); }
 // Proses Logout
 logoutBtn.addEventListener('click', () => {
   if (confirm('Yakin mau logout?')) {
-    const user = netlifyIdentity.currentUser();
-    if (user) {
-      user.logout().then(() => {
-        loginScreen.classList.remove('hidden');
-        mainApp.style.display = 'none';
-        loginEmail.value = '';
-        loginPass.value = '';
-      }).catch(err => console.error(err));
-    }
+    window.netlifyIdentity.logout();
+    loginScreen.classList.remove('hidden');
+    mainApp.style.display = 'none';
+    loginEmail.value = '';
+    loginPass.value = '';
   }
 });
 
