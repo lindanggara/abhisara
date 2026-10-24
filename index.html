@@ -5,9 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#f2f4fb">
 <title>ABHISARA · Lap Timer Dashboard</title>
-<!-- 100% offline: no external fonts/icons/libraries by default. Icons are inline SVG,
-     fonts use the system stack. The only optional exception is "Ekspor JPG", which
-     needs a one-time internet fetch the first time it's used (see screenshotBtn). -->
 <style>
   :root{
     --bg:#eef1fb;
@@ -51,8 +48,144 @@
   }
   .app{max-width:460px;width:100%;}
 
+  /* ===== LOGIN ===== */
+  #loginScreen {
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(1100px 500px at 85% -10%, #e3e6fb 0%, transparent 60%),
+      radial-gradient(900px 500px at -10% 10%, #eef4ff 0%, transparent 55%),
+      var(--bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    z-index: 9999;
+  }
+  #loginScreen.hidden { display: none; }
+  .login-card {
+    background: var(--surface);
+    border-radius: var(--radius-xl);
+    padding: 32px 24px;
+    width: 100%;
+    max-width: 380px;
+    box-shadow: 0 20px 60px rgba(79,70,229,0.15);
+    border: 1px solid var(--line);
+  }
+  .login-brand {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+  .login-brand-mark {
+    width: 48px; height: 48px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, var(--primary-1), var(--primary-2));
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 8px 20px var(--primary-glow);
+    color: #fff; font-family: var(--font-display); font-weight: 800; font-size: 20px;
+  }
+  .login-brand-text h1 {
+    font-family: var(--font-display); font-size: 18px; font-weight: 700;
+  }
+  .login-brand-text .sub {
+    font-size: 11px; color: var(--ink-dim); text-transform: uppercase; letter-spacing: 0.4px;
+  }
+  .login-field {
+    margin-bottom: 14px;
+  }
+  .login-field label {
+    display: block;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--ink-dim);
+    margin-bottom: 6px;
+  }
+  .login-field input {
+    width: 100%;
+    background: var(--surface-soft);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    padding: 12px 14px;
+    font-size: 14px;
+    font-family: var(--font-body);
+    color: var(--ink);
+    transition: 0.2s;
+  }
+  .login-field input:focus {
+    outline: none;
+    border-color: var(--primary-1);
+    background: #fff;
+  }
+  .login-btn {
+    width: 100%;
+    min-height: 50px;
+    background: linear-gradient(135deg, var(--primary-1), var(--primary-2));
+    color: #fff;
+    border: 0;
+    border-radius: var(--radius-md);
+    font-family: var(--font-body);
+    font-weight: 700;
+    font-size: 15px;
+    cursor: pointer;
+    margin-top: 6px;
+    transition: 0.2s;
+  }
+  .login-btn:active { opacity: 0.85; transform: scale(0.98); }
+  .login-error {
+    color: var(--red);
+    background: var(--red-soft);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 12.5px;
+    margin-bottom: 12px;
+    display: none;
+    font-weight: 600;
+  }
+  .login-error.show { display: block; }
+  .login-hint {
+    font-size: 10.5px;
+    color: var(--ink-dim);
+    text-align: center;
+    margin-top: 16px;
+    line-height: 1.5;
+  }
+
+  /* ===== LOGOUT BUTTON ===== */
+  .logout-btn {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 6px 10px;
+    font-size: 13px;
+    cursor: pointer;
+    color: var(--ink-dim);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    transition: 0.2s;
+    flex-shrink: 0;
+  }
+  .logout-btn:hover {
+    border-color: var(--red);
+    color: var(--red);
+    background: var(--red-soft);
+  }
+  .logout-btn .icon-svg { width: 14px; height: 14px; }
+
+  .topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
   /* ===== HEADER ===== */
-  .topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;gap:10px;}
+  .topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;gap:10px;flex-wrap:wrap;}
   .brand{display:flex;align-items:center;gap:10px;}
   .brand-mark{
     width:38px;height:38px;border-radius:12px;flex-shrink:0;
@@ -138,7 +271,7 @@
   .section-title .count{font-size:11px;color:var(--ink-dim);font-weight:500;font-family:var(--font-body);flex-shrink:0;}
   .section-title .count.filled{color:var(--primary-1);font-weight:700;}
 
-  /* ===== CARDS (settings / notes / chart / penilaian) ===== */
+  /* ===== CARDS ===== */
   .settings-card,.notes-card,.chart-card,.penilaian-card,.formula-card{
     background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-lg);padding:16px;margin-bottom:18px;
   }
@@ -246,7 +379,7 @@
   .history-actions{display:flex;gap:10px;margin-top:4px;flex-wrap:wrap;}
   .history-actions button{flex:1;min-width:130px;}
 
-  /* ===== BUTTONS (shared) ===== */
+  /* ===== BUTTONS ===== */
   .btn-primary,.btn-gold,.btn-danger,.btn-outline{
     border:0;border-radius:var(--radius-md);font-weight:700;cursor:pointer;transition:.2s;min-height:44px;padding:0 14px;
     display:inline-flex;align-items:center;justify-content:center;gap:7px;font-size:12.5px;font-family:var(--font-body);
@@ -282,12 +415,38 @@
     .history-summary div:last-child{grid-column:span 2;}
     .history-actions{flex-direction:column;}
     .history-actions button{min-width:0;}
+    .date-badge{font-size:10px;padding:6px 10px;}
   }
 </style>
 </head>
 <body>
 
-<div class="app">
+<!-- ===== LOGIN SCREEN ===== -->
+<div id="loginScreen">
+  <div class="login-card">
+    <div class="login-brand">
+      <div class="login-brand-mark">A</div>
+      <div class="login-brand-text">
+        <h1>Lap Timer</h1>
+        <div class="sub">Abhisara · Precision Timing</div>
+      </div>
+    </div>
+    <div class="login-error" id="loginError">Username atau password salah!</div>
+    <div class="login-field">
+      <label for="loginUser">Username</label>
+      <input type="text" id="loginUser" placeholder="Masukkan username" autocomplete="username">
+    </div>
+    <div class="login-field">
+      <label for="loginPass">Password</label>
+      <input type="password" id="loginPass" placeholder="Masukkan password" autocomplete="current-password">
+    </div>
+    <button class="login-btn" id="loginBtn">Masuk</button>
+    <div class="login-hint">Login diperlukan untuk mengakses dashboard</div>
+  </div>
+</div>
+
+<!-- ===== MAIN APP ===== -->
+<div class="app" id="mainApp" style="display:none;">
 <div id="screenshot-area">
 
   <!-- TOPBAR -->
@@ -299,7 +458,12 @@
         <div class="sub">Abhisara · Precision Timing</div>
       </div>
     </div>
-    <span class="date-badge" id="dateDisplay">--/--/----</span>
+    <div class="topbar-right">
+      <button class="logout-btn" id="logoutBtn" title="Logout">
+        <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      </button>
+      <span class="date-badge" id="dateDisplay">--/--/----</span>
+    </div>
   </div>
 
   <!-- HERO -->
@@ -441,7 +605,77 @@
 </div>
 
 <script>
-/* ===================== ICONS (inline SVG, no external font) ===================== */
+/* ===================== KONFIGURASI LOGIN ===================== */
+// GANTI USERNAME & PASSWORD DI SINI
+const AUTH_USER = 'abhisara';
+const AUTH_PASS = '12345';
+const AUTH_KEY = 'abhisaraLoggedIn';
+
+/* ===================== LOGIN HANDLER ===================== */
+const loginScreen = document.getElementById('loginScreen');
+const mainApp = document.getElementById('mainApp');
+const loginUser = document.getElementById('loginUser');
+const loginPass = document.getElementById('loginPass');
+const loginBtn = document.getElementById('loginBtn');
+const loginError = document.getElementById('loginError');
+const logoutBtn = document.getElementById('logoutBtn');
+
+function checkLogin() {
+  return localStorage.getItem(AUTH_KEY) === 'true';
+}
+
+function showApp() {
+  loginScreen.classList.add('hidden');
+  mainApp.style.display = 'block';
+}
+
+function showLogin() {
+  loginScreen.classList.remove('hidden');
+  mainApp.style.display = 'none';
+  loginUser.value = '';
+  loginPass.value = '';
+  loginError.classList.remove('show');
+  setTimeout(() => loginUser.focus(), 100);
+}
+
+function doLogin() {
+  const u = loginUser.value.trim();
+  const p = loginPass.value;
+  if (u === AUTH_USER && p === AUTH_PASS) {
+    localStorage.setItem(AUTH_KEY, 'true');
+    loginError.classList.remove('show');
+    showApp();
+    // reload data & render setelah login
+    const hasSavedData = loadData();
+    if (!hasSavedData) { renderLaps(); hitungPenilaian(); updateSettingSummary(); }
+    loadHistory();
+  } else {
+    loginError.classList.add('show');
+    loginPass.value = '';
+    loginPass.focus();
+  }
+}
+
+loginBtn.addEventListener('click', doLogin);
+loginUser.addEventListener('keydown', e => { if (e.key === 'Enter') loginPass.focus(); });
+loginPass.addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+
+logoutBtn.addEventListener('click', () => {
+  if (confirm('Yakin mau logout?')) {
+    localStorage.removeItem(AUTH_KEY);
+    showLogin();
+  }
+});
+
+// Cek status login saat halaman dimuat
+if (checkLogin()) {
+  showApp();
+  // Data akan di-load setelah script utama jalan (di bawah)
+} else {
+  showLogin();
+}
+
+/* ===================== ICONS ===================== */
 const ICONS = {
   play:'<path d="M8 5v14l11-7z"/>',
   pause:'<path d="M6 5h4v14H6zM14 5h4v14h-4z"/>',
@@ -475,7 +709,8 @@ const ICONS = {
   camera:'<path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2Z"/><circle cx="12" cy="13" r="4"/>',
   spinner:'<circle cx="12" cy="12" r="9" opacity="0.25"/><path d="M21 12a9 9 0 0 0-9-9"/>',
   check:'<path d="M20 6 9 17l-5-5"/>',
-  copy:'<rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>'
+  copy:'<rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>',
+  logout:'<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>'
 };
 const SOLID_ICONS = new Set(['play','pause','flag','bolt','star']);
 function icon(name, size) {
@@ -534,7 +769,7 @@ const historyCount = document.getElementById('historyCount');
 const exportHistoryBtn = document.getElementById('exportHistoryBtn');
 const clearHistoryBtn = document.getElementById('clearHistoryBtn');
 
-/* ===================== STATIC LABELS (icons + text, no emoji) ===================== */
+/* ===================== STATIC LABELS ===================== */
 document.getElementById('heroFlagLabel').innerHTML = icon('flag',12) + ' Sesi Aktif';
 startBtn.innerHTML = icon('play') + ' <span class="btn-label">START</span>';
 lapBtn.innerHTML = icon('flag') + ' <span class="btn-label">LAP</span>';
@@ -660,7 +895,7 @@ function hitungPenilaian() {
   naValue.className = 'nilai-value ' + (na >= 80 ? 'high' : na >= 60 ? 'medium' : 'low');
 }
 
-/* ===================== SAVE / LOAD MAIN DATA (localStorage) ===================== */
+/* ===================== SAVE / LOAD ===================== */
 function saveData() {
   try {
     localStorage.setItem('lapTimerData', JSON.stringify({
@@ -669,7 +904,7 @@ function saveData() {
       date: dateDisplay.textContent, running, startTime, lapStart, totalElapsedBeforePause, pauseElapsed,
       timerText: timerEl.innerHTML
     }));
-  } catch (e) { /* storage unavailable, ignore */ }
+  } catch (e) { /* ignore */ }
 }
 function loadData() {
   try {
@@ -848,8 +1083,7 @@ function restoreSession(session) {
   goToTimerTab();
 }
 
-/* ===================== SHARED EXPORT HELPERS ===================== */
-// quote=true wraps non-numeric cells in quotes (safe for Excel); numbers stay unquoted.
+/* ===================== EXPORT HELPERS ===================== */
 function rowsToDelimited(rows, delimiter, quote) {
   return rows.map(row => row.map(cell => {
     let str = cell === undefined || cell === null ? '' : String(cell);
@@ -1109,7 +1343,7 @@ settingNotes.addEventListener('input', saveData);
 tTercepatInput.addEventListener('input', () => { hitungPenilaian(); saveData(); });
 klTerbanyakInput.addEventListener('input', () => { hitungPenilaian(); saveData(); });
 
-/* ===================== EXPORT CSV / COPY (current session) ===================== */
+/* ===================== EXPORT CSV / COPY ===================== */
 exportBtn.addEventListener('click', () => {
   const rows = lapsToRows(dateDisplay.textContent, sessionInput.value.trim() || 'Tanpa Sesi', lowInput.value, highInput.value, settingNotes.value, laps);
   const csv = rowsToDelimited(rows, ';', true);
@@ -1144,7 +1378,7 @@ clearHistoryBtn.addEventListener('click', () => {
   if (confirm('Hapus semua history? Data tidak bisa dikembalikan.')) { history = []; saveHistory(); }
 });
 
-/* ===================== SCREENSHOT TO JPG (optional, needs internet once) ===================== */
+/* ===================== SCREENSHOT ===================== */
 let html2canvasLoading = null;
 function loadHtml2Canvas() {
   if (window.html2canvas) return Promise.resolve();
@@ -1196,9 +1430,11 @@ document.addEventListener('keydown', (e) => {
 });
 
 /* ===================== INIT ===================== */
-const hasSavedData = loadData();
-if (!hasSavedData) { renderLaps(); hitungPenilaian(); updateSettingSummary(); }
-loadHistory();
+if (checkLogin()) {
+  const hasSavedData = loadData();
+  if (!hasSavedData) { renderLaps(); hitungPenilaian(); updateSettingSummary(); }
+  loadHistory();
+}
 </script>
 </body>
 </html>
