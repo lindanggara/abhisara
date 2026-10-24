@@ -6,8 +6,8 @@
 <meta name="theme-color" content="#f2f4fb">
 <title>ABHISARA · Lap Timer Dashboard</title>
 
-<!-- SCRIPT NETLIFY IDENTITY -->
-<script type="text/javascript" src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+<!-- Library resmi Netlify untuk form kustom -->
+<script src="https://unpkg.com/gotrue-js@1.0.1/dist/gotrue.min.js"></script>
 
 <style>
   :root{
@@ -52,45 +52,97 @@
   }
   .app{max-width:460px;width:100%; display:none;} /* Sembunyikan awal sampai login */
 
+  /* ===== FORM LOGIN KUSTOM ===== */
+  #loginScreen {
+    position: fixed;
+    inset: 0;
+    background: var(--bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    z-index: 9999;
+  }
+  #loginScreen.hidden { display: none; }
+  .login-card {
+    background: var(--surface);
+    border-radius: var(--radius-xl);
+    padding: 32px 24px;
+    width: 100%;
+    max-width: 380px;
+    box-shadow: 0 20px 60px rgba(79,70,229,0.15);
+    border: 1px solid var(--line);
+  }
+  .login-brand {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .login-brand-mark {
+    width: 56px; height: 56px;
+    border-radius: 14px;
+    background: #fff;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    overflow: hidden;
+    padding: 6px;
+    border: 1px solid var(--line);
+    flex-shrink: 0;
+  }
+  .login-brand-mark img { width: 100%; height: 100%; object-fit: contain; display: block; }
+  .login-brand-text h1 { font-family: var(--font-display); font-size: 18px; font-weight: 700; }
+  .login-brand-text .sub { font-size: 11px; color: var(--ink-dim); text-transform: uppercase; letter-spacing: 0.4px; }
+  
+  .login-field { margin-bottom: 14px; }
+  .login-field label {
+    display: block; font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.5px; color: var(--ink-dim); margin-bottom: 6px;
+  }
+  .login-field input {
+    width: 100%; background: var(--surface-soft); border: 1px solid var(--line);
+    border-radius: var(--radius-sm); padding: 12px 14px; font-size: 14px;
+    font-family: var(--font-body); color: var(--ink); transition: 0.2s;
+  }
+  .login-field input:focus { outline: none; border-color: var(--primary-1); background: #fff; }
+  
+  .login-btn {
+    width: 100%; min-height: 50px; background: linear-gradient(135deg, var(--primary-1), var(--primary-2));
+    color: #fff; border: 0; border-radius: var(--radius-md); font-family: var(--font-body);
+    font-weight: 700; font-size: 15px; cursor: pointer; margin-top: 6px; transition: 0.2s;
+  }
+  .login-btn:active { opacity: 0.85; transform: scale(0.98); }
+  .login-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  
+  .login-error {
+    color: var(--red); background: var(--red-soft); border-radius: 8px;
+    padding: 10px 12px; font-size: 12.5px; margin-bottom: 12px;
+    display: none; font-weight: 600;
+  }
+  .login-error.show { display: block; }
+  .login-hint { font-size: 10.5px; color: var(--ink-dim); text-align: center; margin-top: 16px; line-height: 1.5; }
+
   /* ===== HEADER ===== */
   .topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;gap:10px;flex-wrap:wrap;}
   .brand{display:flex;align-items:center;gap:10px;}
   .brand-mark{
     width:42px;height:42px;border-radius:10px;flex-shrink:0;
-    background:#fff;
-    display:flex;align-items:center;justify-content:center;
-    box-shadow:0 4px 12px rgba(0,0,0,0.08);
-    overflow:hidden;
-    padding:4px;
-    border:1px solid var(--line);
+    background:#fff; display:flex;align-items:center;justify-content:center;
+    box-shadow:0 4px 12px rgba(0,0,0,0.08); overflow:hidden; padding:4px; border:1px solid var(--line);
   }
   .brand-mark img{width:100%;height:100%;object-fit:contain;display:block;}
   .brand-text h1{font-family:var(--font-display);font-size:16px;font-weight:700;letter-spacing:-0.2px;}
   .brand-text .sub{font-size:11px;color:var(--ink-dim);font-weight:500;letter-spacing:0.4px;text-transform:uppercase;}
   
-  .topbar-right {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    flex-shrink: 0;
+  .topbar-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+  .logout-btn {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 999px;
+    padding: 6px 10px; font-size: 13px; cursor: pointer; color: var(--ink-dim);
+    display: flex; align-items: center; gap: 4px; transition: 0.2s; flex-shrink: 0;
   }
-
-  /* Tombol Netlify Identity */
-  [data-netlify-identity-button] {
-    background: var(--primary-1);
-    color: #fff;
-    border: none;
-    padding: 8px 14px;
-    border-radius: 999px;
-    font-size: 12px;
-    font-weight: 700;
-    cursor: pointer;
-    font-family: var(--font-body);
-    transition: 0.2s;
-  }
-  [data-netlify-identity-button]:hover {
-    background: var(--primary-2);
-  }
+  .logout-btn:hover { border-color: var(--red); color: var(--red); background: var(--red-soft); }
+  .logout-btn .icon-svg { width: 14px; height: 14px; }
 
   .date-badge{
     background:var(--surface);border:1px solid var(--line);padding:8px 14px;border-radius:999px;
@@ -318,6 +370,33 @@
 </head>
 <body>
 
+<!-- ===== FORM LOGIN KUSTOM (HTML Biasa) ===== -->
+<div id="loginScreen">
+  <div class="login-card">
+    <div class="login-brand">
+      <div class="login-brand-mark"><img src="logo-ferc.png" alt="FERC"></div>
+      <div class="login-brand-text">
+        <h1>Lap Timer</h1>
+        <div class="sub">Abhisara · Precision Timing</div>
+      </div>
+    </div>
+    
+    <div class="login-error" id="loginError">Email atau password salah!</div>
+    
+    <div class="login-field">
+      <label for="loginEmail">Email</label>
+      <input type="email" id="loginEmail" placeholder="Masukkan email" autocomplete="email">
+    </div>
+    <div class="login-field">
+      <label for="loginPass">Password</label>
+      <input type="password" id="loginPass" placeholder="Masukkan password" autocomplete="current-password">
+    </div>
+    
+    <button class="login-btn" id="loginBtn">Masuk</button>
+    <div class="login-hint">Gunakan email dan password yang sudah diundang oleh admin.</div>
+  </div>
+</div>
+
 <!-- ===== MAIN APP ===== -->
 <div class="app" id="mainApp">
 <div id="screenshot-area">
@@ -332,9 +411,9 @@
       </div>
     </div>
     <div class="topbar-right">
-      <!-- Widget Netlify Identity: Berubah jadi tombol Login/Logout otomatis -->
-      <div data-netlify-identity-button></div>
-      
+      <button class="logout-btn" id="logoutBtn" title="Logout">
+        <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      </button>
       <span class="date-badge" id="dateDisplay">--/--/----</span>
     </div>
   </div>
@@ -478,36 +557,89 @@
 </div>
 
 <script>
-/* ===================== INIT NETLIFY IDENTITY ===================== */
-// Inisialisasi widget
-if (window.netlifyIdentity) {
-  window.netlifyIdentity.on("init", user => {
-    if (user) {
-      // Jika sudah login
-      document.getElementById('mainApp').style.display = 'block';
-    } else {
-      // Jika belum login, buka popup login
-      window.netlifyIdentity.open('login');
-    }
-  });
+/* ===================== KONFIGURASI NETLIFY IDENTITY ===================== */
+// Ganti URL di bawah ini dengan URL Netlify kamu + /.netlify/identity
+const netlifyIdentity = new GoTrue({
+  APIUrl: 'https://abhisara.netlify.app/.netlify/identity',
+  setCookie: true
+});
 
-  // Saat user klik login
-  window.netlifyIdentity.on("login", user => {
-    document.getElementById('mainApp').style.display = 'block';
-    window.netlifyIdentity.close();
-    
-    // Load data setelah login
-    const hasSavedData = loadData();
-    if (!hasSavedData) { renderLaps(); hitungPenilaian(); updateSettingSummary(); }
-    loadHistory();
-  });
+/* ===================== LOGIN KUSTOM ===================== */
+const loginScreen = document.getElementById('loginScreen');
+const mainApp = document.getElementById('mainApp');
+const loginEmail = document.getElementById('loginEmail');
+const loginPass = document.getElementById('loginPass');
+const loginBtn = document.getElementById('loginBtn');
+const loginError = document.getElementById('loginError');
+const logoutBtn = document.getElementById('logoutBtn');
 
-  // Saat user klik logout
-  window.netlifyIdentity.on("logout", () => {
-    document.getElementById('mainApp').style.display = 'none';
-    window.location.reload(); // Refresh halaman agar bersih
-  });
+// Cek apakah user sudah login saat halaman dimuat
+const currentUser = netlifyIdentity.currentUser();
+if (currentUser) {
+  loginScreen.classList.add('hidden');
+  mainApp.style.display = 'block';
+} else {
+  loginScreen.classList.remove('hidden');
+  mainApp.style.display = 'none';
 }
+
+// Proses Login
+function doLogin() {
+  const email = loginEmail.value.trim();
+  const password = loginPass.value;
+  
+  if (!email || !password) {
+    loginError.textContent = 'Email dan password wajib diisi!';
+    loginError.classList.add('show');
+    return;
+  }
+
+  loginBtn.disabled = true;
+  loginBtn.textContent = 'Memproses...';
+  loginError.classList.remove('show');
+
+  netlifyIdentity.login(email, password, true)
+    .then(response => {
+      // Login berhasil
+      loginScreen.classList.add('hidden');
+      mainApp.style.display = 'block';
+      
+      // Load data setelah login
+      const hasSavedData = loadData();
+      if (!hasSavedData) { renderLaps(); hitungPenilaian(); updateSettingSummary(); }
+      loadHistory();
+    })
+    .catch(error => {
+      // Login gagal
+      console.error(error);
+      loginError.textContent = 'Email atau password salah!';
+      loginError.classList.add('show');
+      loginPass.value = '';
+    })
+    .finally(() => {
+      loginBtn.disabled = false;
+      loginBtn.textContent = 'Masuk';
+    });
+}
+
+loginBtn.addEventListener('click', doLogin);
+loginEmail.addEventListener('keydown', e => { if (e.key === 'Enter') loginPass.focus(); });
+loginPass.addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+
+// Proses Logout
+logoutBtn.addEventListener('click', () => {
+  if (confirm('Yakin mau logout?')) {
+    const user = netlifyIdentity.currentUser();
+    if (user) {
+      user.logout().then(() => {
+        loginScreen.classList.remove('hidden');
+        mainApp.style.display = 'none';
+        loginEmail.value = '';
+        loginPass.value = '';
+      }).catch(err => console.error(err));
+    }
+  }
+});
 
 /* ===================== ICONS ===================== */
 const ICONS = {
@@ -543,7 +675,8 @@ const ICONS = {
   camera:'<path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2Z"/><circle cx="12" cy="13" r="4"/>',
   spinner:'<circle cx="12" cy="12" r="9" opacity="0.25"/><path d="M21 12a9 9 0 0 0-9-9"/>',
   check:'<path d="M20 6 9 17l-5-5"/>',
-  copy:'<rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>'
+  copy:'<rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>',
+  logout:'<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>'
 };
 const SOLID_ICONS = new Set(['play','pause','flag','bolt','star']);
 function icon(name, size) {
